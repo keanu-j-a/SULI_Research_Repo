@@ -1,1 +1,4 @@
-This folder will contain all of the code developed throughout the SULI MOOSE internship.
+This folder will contain all of the code developed throughout the SULI internship.
+
+The InitialCaseStudy provides a generalized problem in which an MPI and single core processor will be used to
+solve.
