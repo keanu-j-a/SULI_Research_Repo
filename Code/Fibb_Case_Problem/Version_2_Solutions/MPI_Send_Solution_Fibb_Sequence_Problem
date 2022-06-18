@@ -2,69 +2,49 @@
 #include <cstdio>
 #include <cmath>
 
-/*// ##############################   PLEASE READ   ##############################################################|
-|																												  |
-| This code is intented to solve the 'Even Fibonacci Sequence Case Problem'. The problem statement is provided in |
-| the GitHub description.																					      |
-|																												  |
-| This code sorts numerical data from the Fibonacci sequence using MPI Send among a group of 4 processes. In this |
-| code, process 0 generates numbers from the Fibonacci sequence and distibutes the data (using MPI_Send) among    |
-| the remaining 3 processes. The odd numbers are subsequently filtered out among all processes. Finally, the sum  |
-|  of the even numbers are compiled and printed according to the problem statement.								  |
-|																												  |
-*/// ##############################   PLEASE READ   ##############################################################|
-
 int main(int argc, char* argv[]) {
 
-	int rank, size;
-	MPI_Init(NULL, NULL);
-	MPI_Status status;
-	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
-	MPI_Comm_size(MPI_COMM_WORLD, &size);
+    int rank = 0;int size;
+    MPI_Init(NULL, NULL);
+    MPI_Status status;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-	printf("Available ranks are: %d \n \n", rank);
-	fflush(stdout);
+    printf("Available ranks are: %d \n \n", rank); // first rank rollcall
+    fflush(stdout);
 
-	int num1 = 1; int num2 = 1;
-	int RecieveNum; int SumNum;
-	int sum = 0;
+    int num1 = 1; int num2 = 1; int recieve_data1; int recieve_data2;
+    int RecieveNum; int SumNum;
 
-	for
-		(int n = 0; n < 33; n++) {
-		if
-			(rank == 0) {
+    for
+        (int n = 0; n < 16; n++) {
+        // define the sorting algorithim
+        int DeliverTo = (n % 3) + 1;
+        if
+            (rank == 0) {
 
-			// perform the fibb sequence algorithim
-			SumNum = num1 + num2;
-			num1 = num2;
-			num2 = SumNum;
-			int x = 0;
+            // perform the fibb sequence algorithim
+            SumNum = num1 + num2;
+            num1 = num2;
+            num2 = SumNum;
 
-			// selection algorithim
-			int DeliverTo = (n % 3) + 1;
-			MPI_Send(&SumNum, 1, MPI_INT, DeliverTo, 1, MPI_COMM_WORLD);
+            // send calculated result
+            MPI_Send(&SumNum, 1, MPI_INT, DeliverTo, 1, MPI_COMM_WORLD);
+        }
+        else if (rank == DeliverTo) {
+            // recieve the element integer
+            MPI_Recv(&RecieveNum, 1, MPI_INT, 0, 1, MPI_COMM_WORLD, &status);
 
-		}
+            if (RecieveNum % 2 != 0) {
+                RecieveNum = 0;
+            }
 
-		else {
-			// recieve the element integer
-			MPI_Recv(&RecieveNum, 1, MPI_INT, 0, 1, MPI_COMM_WORLD, &status);
-			
-			// filter out all odd numbers (optional)
-			if (RecieveNum % 2 != 0) {
-				RecieveNum = 0;
-			}
-
-			sum = sum + RecieveNum;
-
-			if (rank == 1) {
-				printf("I am process rank %d, and I recieved the number %d. \n", rank, RecieveNum);
-				fflush(stdout);
-
-				printf("I am rank: %d and I have sum: %d \n \n", rank, sum);
-				fflush(stdout);
-			}
-		}
-	MPI_Finalize();
-	return 0;
+            // print and flush the buffer
+            printf("I am process rank %d, and I recieved the number %d. \n", rank, RecieveNum);
+            fflush(stdout);
+        }
+    }
+    
+    MPI_Finalize();
+    return 0;
 }
