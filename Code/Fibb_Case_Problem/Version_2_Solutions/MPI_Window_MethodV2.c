@@ -27,8 +27,8 @@ int main(int argc, char* argv[]) {
 
     ////////////define sorting algorithim///////////////////////
 
-    const long upperLimit = 3500;
-    int multiplier = 0;
+    const long upperLimit = 2000000000;
+    double start, end;
 
     // define sorting algorithim
     const long start_val = ceil(rank * (upperLimit / size)) + 1;
@@ -43,6 +43,7 @@ int main(int argc, char* argv[]) {
     }
 
     ////////////define sorting algorithim///////////////////////
+    start = MPI_Wtime();
 
     unsigned long int arraySize = end_val - start_val;
 
@@ -108,7 +109,7 @@ int main(int argc, char* argv[]) {
 
     MPI_Accumulate(&comp_array[0], arraySize, MPI_INT, 0, 0, arraySize, MPI_INT, MPI_SUM, win);
         for (int i = 0; i < arraySize; i++) {
-        printf("\n %lu of rank %d iteration %d\n", comp_array[i], rank, i);
+        //printf("\n %lu of rank %d iteration %d\n", comp_array[i], rank, i);
     }
     MPI_Win_fence(0, win);
 
@@ -120,7 +121,13 @@ int main(int argc, char* argv[]) {
     }
 
     if (rank == 0) {
-        printf("This is my window number %lu", finalSum);
+        //printf("This is my window number %lu", finalSum);
+    }
+    end = MPI_Wtime();
+
+    double final_time = end - start;
+    if (rank == 0) {
+        printf("\n%f\n",final_time);
     }
 
     MPI_Win_free(&win);
