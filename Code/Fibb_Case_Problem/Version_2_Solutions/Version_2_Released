@@ -1,0 +1,2 @@
+following the release of version 1, this latest folder contains optimized code, with additional methods, from the version 1 release.
+Version 2 includes dynamic selection algorithims and low-level memory allocations to solve the case problem.
