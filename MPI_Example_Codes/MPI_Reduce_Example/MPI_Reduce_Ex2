@@ -1,0 +1,32 @@
+#include <mpi.h>
+#include <stdio.h>
+
+int main(int argc, char* argv[]) {
+
+	int rank, size; // start, end, Limit;
+	MPI_Init(&argc, &argv);
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+	MPI_Comm_size(MPI_COMM_WORLD, &size);
+	MPI_Status status;
+	
+	//int* send_buffer = new int[5];
+	//int recieve_buf[5] = { 0 };
+	int send_buffer = 10;
+	int recieve_buf = 0;
+
+	// int recieve_buf = 0;// int* recieve_buf = new int[5]; // int recieve_buf
+
+	// decleared on all processes for send_buffer
+	/*
+	for (int i = 0; i < 5; i++) {
+		send_buffer[i] = i + 10;
+	}
+	*/
+	
+	MPI_Reduce(&send_buffer, &recieve_buf, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+
+	printf("I am rank %d, and I have the number %d", rank, recieve_buf);
+
+	MPI_Finalize();
+
+}
