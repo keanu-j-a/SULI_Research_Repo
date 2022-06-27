@@ -1,5 +1,0 @@
-This folder will contain all of the code developed throughout the SULI internship.
-
-The inital case study file contains all of the code pertaining to the Fibonacci sequence opening problem. The purpose of this case problem was to introduce the concept
-of MPI coding with C++ and to gather preliminary data on cpu perfomance and computation timing on serial vs. parallel algorithims. The results of this data will be used
-as a reference when working with future MOOSE applications.
