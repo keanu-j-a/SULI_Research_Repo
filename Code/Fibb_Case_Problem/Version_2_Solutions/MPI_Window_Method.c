@@ -64,7 +64,7 @@ int main(int argc, char* argv[]) {
     }
     */
 
-    // calculate fibb sequence positions for the sequence
+    // calculate fibb sequence positions for the sequence 
 
     int l = 0;
     long double fibb_const = (1 + sqrt(5)) / 2;  int j = start_val; long double fibb_const1 = (1 - sqrt(5)) / 2;
