@@ -48,70 +48,12 @@ int main(int argc, char* argv[]) {
         }
 
     }
+/*
 
-    int num = 1; num2 = 2; int j = 17;
-    SumNum = num1 + num2;
-    double fibb_const = 1.618; double number = 0.618;
+More code to run...
 
-    
-    // calculate fibb sequence positions for the first and second while loop.
-    double position11 = (pow(fibb_const, j) - pow(number, j)) / (sqrt(5));
-    double position12 = (pow(fibb_const, j + 1) - pow(number, j + 1)) / (sqrt(5));
-    position11 = ceil(position11);
-    position12 = ceil(position12);
-    int SumNum2; int RecieveNum2;
+*/
+MPI_Finalize();
+return 0;
 
-    for
-        (j = 17; j != 32; j++) {
-
-        // define the algorthim in which processes will be selected
-        int DeliverTo = (j % 3) + 1;
-
-        if
-            (rank == 0) {
-
-            // initalize the algorithm
-            SumNum2 = position11 + position12;
-            position11 = position12;
-            position12 = SumNum2;
-
-            // send calculated data to the next order
-            MPI_Send(&SumNum2, 1, MPI_INT, DeliverTo, 2, MPI_COMM_WORLD);
-        }
-        else if (rank == DeliverTo) {
-
-            // recieve element integer
-            MPI_Recv(&RecieveNum2, 1, MPI_INT, 0, 2, MPI_COMM_WORLD, &status);
-
-            // filter odd numbers
-            if (RecieveNum2 % 2 != 0) {
-                RecieveNum2 = 0;
-            }
-            else {
-                y = y + RecieveNum2;
-            }
-
-            // print the result anf flush the buffer
-            // printf("I am process rank %d, and I recieved the number %d. \n", rank, RecieveNum2);
-            // fflush(stdout);
-        }
-    }
-    /*
-    printf("1.) My rank is %d and my number is %d \n \n", rank, x);
-    fflush(stdout);
-    printf("2.) My rank is %d and my number is %d \n \n", rank, y);
-    fflush(stdout);
-    */
-    // MPI_Barrier(MPI_COMM_WORLD);
-
-    MPI_Reduce(&x, &recieve_data1, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
-    MPI_Reduce(&y, &recieve_data2, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
-    if (rank == 0) {
-        int finalSum = recieve_data1 + recieve_data2;
-        printf("The final sum is %d", finalSum);
-    }
-
-
-    MPI_Finalize();
-    return 0;
-}
+  }
