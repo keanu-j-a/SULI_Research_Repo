@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <math.h>
 #include <stdlib.h>
-#include <iostream>
+#include <time.h>
 
 // determinate solving function
 // the origional determinate code was not my origional work
@@ -33,7 +33,7 @@ double determinate(int m, int* p) {
 		n = 0;
 		sign = 1;
 		int * q;
-		q = new int[(m - 1) * (m - 1)];
+		q = (int*)calloc(((m - 1) * (m - 1)), sizeof(int));
 
 		for (i = 0; i < m; i++) 
 		{
@@ -62,7 +62,6 @@ double determinate(int m, int* p) {
 			ans = ans + inner_sol;
 			sign = sign * ( - 1);
 		}
-		delete [] q;
 	}
 	return ans;
 }
@@ -78,18 +77,18 @@ int main(int argc, char* argv[]) {
 	// only perfect square entires are allowed
 
 
-	int* p, r = 5, c = 5;				
+	int* p, r = 4, c = 4;				
 	int numberOfNumbers = r * c;
-	srand(time(0));
+	//srand(time(0));
 
 	// To get started, define r rows.
-	p = new int[r * r];
+	p = (int*)calloc(r * r, sizeof(int));
 
 	double* numberArray = (double*)calloc(numberOfNumbers, sizeof(double));
 
 	for (int h= 0; h < numberOfNumbers; h++) 
 	{
-		numberArray[h] = rand();
+		numberArray[h] = rand() % 100;
 		printf("\n %f \n", numberArray[h]);
 	}
 
@@ -107,6 +106,5 @@ int main(int argc, char* argv[]) {
 
 	double ans = determinate(r, p);
 	printf("Solution is: %lf", ans);
-	delete[] p;
 	return 0;
 }
