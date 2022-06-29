@@ -83,7 +83,6 @@ int determinate_solver(int r, int* ptr, int rank, int size) {
 				sign = sign * -1;
 				printf("The final solution is: %d from rank %d \n \n", ans, rank);
 			}
-			delete[] q;
 		}
 		return ans;
 }
