@@ -8,22 +8,26 @@
 // the origional determinate code was not my origional work
 // the MPI implementation is my addition to this program
 double determinate(int m, int* p, int size, int rank) {
+
 	long double ans = 0, inner_sol, inner_det;
 	int a, b, c, d, start_val, end_val, upperLimit = m;
-	start_val = (rank * (upperLimit / size)) + 1;
+	start_val = ceil(rank * (upperLimit / size));
 
 	// define the ranged ranking algoritim
 	if (rank == (size - 1)) {
-		end_val = upperLimit;
+		// upperLimit + 1 'fixes' the solution issue.
+		end_val = upperLimit + 1;
 	}
 	else {
 		end_val = start_val + ceil(upperLimit / size) - 1;
 	}
 
+	// printf("%d range is %d to %d on the matrix \n \n",rank, start_val,end_val );
+
 	/////////////////1 x 1 matrix condition////////////////////////////////////////
 	
-	if ((m == 1) || (m == 2)) {
-		if (m == 1) {
+	if ((upperLimit == 1) || (upperLimit == 2)) {
+		if (upperLimit == 1) {
 			ans = *p;
 		}
 		else {
@@ -42,17 +46,19 @@ double determinate(int m, int* p, int size, int rank) {
 		n = 0;
 		sign = 1;
 		int * q;
-		q = (int*)calloc(((end_val - 1) * (end_val - 1)), sizeof(int));
 
-		for (i = start_val; i < end_val; i++)
+		// printf("The matrix size is: %d", m);
+		q = (int*)calloc(((upperLimit - 1) * (upperLimit - 1)), sizeof(int));
+
+		for (i = start_val; i != end_val; i++)
 		{
 			l = 0;
 			n = 0;
 			basic = * (p + i);
 
-			for (j = start_val; j < end_val; j++)
+			for (j = start_val; j != end_val; j++)
 			{
-				for (k = start_val; k < end_val; k++)
+				for (k = start_val; k != end_val; k++)
 				{
 					element = *(p + l);
 					if ((j == 0) || (i == k));
@@ -64,13 +70,14 @@ double determinate(int m, int* p, int size, int rank) {
 					l = l + 1;
 				}
 			}
-			inner_det = determinate(m - 1, q, size, rank);
+			inner_det = determinate(upperLimit - 1, q, size, rank);
 			inner_sol = sign * basic * inner_det;
 
 			ans = ans + inner_sol;
-			sign = sign * ( - 1);
+			sign = sign * (- 1);
 		}
 	}
+	printf("I am ans and I have the final value: %f I am rank: %d \n \n", ans, rank);
 	return ans;
 }
 
@@ -98,10 +105,12 @@ int main(int argc, char* argv[]) {
 
 	double* numberArray = (double*)calloc(numberOfNumbers, sizeof(double));
 
-	for (int h= 0; h < numberOfNumbers; h++) 
+	for (int h = 0; h < numberOfNumbers; h++) 
 	{
 		numberArray[h] = rand() % 100;
-		printf("\n %f \n", numberArray[h]);
+		if (rank == 0) {
+			printf("\n %f \n", numberArray[h]);
+		}
 	}
 
 	int i, j, k, u = 0;
@@ -115,10 +124,16 @@ int main(int argc, char* argv[]) {
 			u++;
 		}
 	}
-
+	double reducedSoln = 0;
 	double ans = determinate(r, p, size, rank);
-	printf("Solution is: %lf", ans);
+	
+	MPI_Reduce(&ans, &reducedSoln, 1,MPI_LONG_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 
+
+
+	if (rank == 0) {
+		printf("Solution is: %lf", reducedSoln);
+	}
 
 	MPI_Finalize();
 	return 0;
