@@ -4,48 +4,55 @@
 #include <stdlib.h>
 #include <time.h>
 
-// determinate solving function
-// the origional determinate code was not my origional work
-// the MPI implementation is my addition to this program
-double determinate(int m, int* p) {
-	long double ans = 0, inner_sol, inner_det;
-	int a, b, c, d;
+/*
 
-	/////////////////1 x 1 matrix condition////////////////////////////////////////
-	
-	if ((m == 1) || (m == 2)) {
-		if (m == 1) {
-			ans = *p;
+Modified on: 06/29/2022
+Keanu J. Ammons
+INL MPI Determinate Matrix Solver
+
+This code will be an MPI implementation of the matrix solver commonly
+found in various C textbooks. The determinate solver shown is able
+to solve any n x n matrix given a vaild input. Moreover, the use of MPI
+allows the matrix to be much larger than traditional matricies. MPI aids
+the computation time of the matrix.
+
+*/
+
+int determinate_solver(int r, int* ptr) {
+	int ans = 0, a = 0, b = 0, c = 0, d = 0;
+	int inner_sol = 0, inner_det = 0;
+
+	// include conditions for when a 1x1 or
+	// 2x2 matrix is included.
+	if (r == 1 || r == 2) {
+		if (r == 1) {
+			ans = ptr[0];
 		}
 		else {
-			a = *p;
-			b = *(p + 1);
-			c = *(p + 2);
-			d = *(p + 3);
+			a = ptr[0];
+			b = ptr[1];
+			c = ptr[2];
+			d = ptr[3];
 			ans = (a * d) - (b * c);
 		}
 	}
-	
-	/////////////////n x n matrix condition////////////////////////////////////////
-	else
-	{
-		int i, j, k, l, n, sign, basic, element;
-		n = 0;
-		sign = 1;
-		int * q;
-		q = (int*)calloc(((m - 1) * (m - 1)), sizeof(int));
+	else {
+		int i, j, k, l, n, sign = 1, basic, element;
 
-		for (i = 0; i < m; i++) 
-		{
+		// define a new pointer array to take into account
+		// that a sub-matrix will be created from the larger
+		// matrix. This is apart of the recursive sol'n.
+		int * q = (int*)calloc(((r - 1) * (r - 1)), sizeof(int));
+
+		for (int i = 0; i < r; i++) {
 			l = 0;
 			n = 0;
-			basic = * (p + i);
+			basic = *(ptr + 1);
 
-			for (j = 0; j < m; j++) 
-			{
-				for (k = 0; k < m; k++) 
-				{
-					element = *(p + l);
+			for (int j = 0; j < r; j++) {
+
+				for (k = 0; k < r; k++) {
+					element = *(ptr + l);
 					if ((j == 0) || (i == k));
 					else
 					{
@@ -55,56 +62,49 @@ double determinate(int m, int* p) {
 					l = l + 1;
 				}
 			}
-			//std::cout << std::endl << basic << " x " << std::endl;
-			inner_det = determinate(m - 1, q);
+			inner_det = determinate_solver(r - 1, q);
 			inner_sol = sign * basic * inner_det;
-
 			ans = ans + inner_sol;
-			sign = sign * ( - 1);
+			sign = sign * (-1);
 		}
 	}
 	return ans;
 }
 
-
-// main function to complete the operation
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv) {
 
 
-	//////////////////// define numbers in the matrix ///////////////////////////////
-	// note that all numbers be able
-	// to form a square matrix of n x n dimentions.
-	// only perfect square entires are allowed
+	int r = 3, c = r, numberOfNumbers, ans = 0;
+	numberOfNumbers = r * c;
+	int* numberArray = (int*)calloc(numberOfNumbers, sizeof(int)); // a pointer array where we will define the numbers of our matrix
+	int* arrayInFunction = (int*)calloc(numberOfNumbers, sizeof(int));
 
+	// produce randomly generated numbers
+	for (int i = 0; i < numberOfNumbers; i++) {
 
-	int* p, r = 4, c = 4;				
-	int numberOfNumbers = r * c;
-	//srand(time(0));
+		numberArray[i] = rand() % 100;
+		printf("My number is: %d \n \n", numberArray[i]);
 
-	// To get started, define r rows.
-	p = (int*)calloc(r * r, sizeof(int));
-
-	double* numberArray = (double*)calloc(numberOfNumbers, sizeof(double));
-
-	for (int h= 0; h < numberOfNumbers; h++) 
-	{
-		numberArray[h] = rand() % 100;
-		printf("\n %f \n", numberArray[h]);
 	}
+	
+	// assign randomly generated numbers to a matrix.
+	int k, u = 0;
+	for (int i = 0; i < r; i++) {
 
-	int i, j, k, u = 0;
-	// Define the numbers in your array:
-	for (i = 0; i < r; i++) 
-	{
-		for (j = 0; j < c; j++) 
-		{
+		for (int j = 0; j < c; j++) {
+
 			k = numberArray[u];
-			*(p + i*c + j) = k;
+			*(arrayInFunction + i*c + j) = k;
 			u++;
+
 		}
 	}
 
-	double ans = determinate(r, p);
-	printf("Solution is: %lf", ans);
+	ans = determinate_solver(r, arrayInFunction);
+	printf("The final solution is: %d \n \n", ans);
+
+	// arrayInFunction is the actual value that we will pass into
+	// the determinate function.
+
 	return 0;
 }
