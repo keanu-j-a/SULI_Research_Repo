@@ -47,7 +47,7 @@ int determinate_solver(int r, int* ptr) {
 		for (int i = 0; i < r; i++) {
 			l = 0;
 			n = 0;
-			basic = *(ptr + 1);
+			basic = *(ptr + i);
 
 			for (int j = 0; j < r; j++) {
 
