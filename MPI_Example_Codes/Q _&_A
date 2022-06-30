@@ -17,4 +17,16 @@ Q: MPI program causes the computation time to increase as more processes are add
 
   https://stackoverflow.com/questions/72704802/mpi-program-does-not-speed-up-after-implementing-parallel-computing-techniques
 
-Q:
+Q: How can Cramer's rule be effectively implemented into MPI?
+
+  A: 
+  LU decomposition is actually the best way to avoid bottlenecks with MPI. Otherwise you will be stuck with inefficent calculations wasting memory and/or
+  computation time. Other work also indicates that gaussian elimination techniques may be used as well.
+  
+  https://stackoverflow.com/questions/72811417/assigning-mpi-processes-to-solve-components-of-a-matrix/72816661#72816661
+  
+  https://arxiv.org/pdf/1308.1536.pdf
+  
+  
+  
+  
