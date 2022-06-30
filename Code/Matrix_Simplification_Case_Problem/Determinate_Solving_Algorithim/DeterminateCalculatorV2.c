@@ -25,7 +25,7 @@ int determinate_solver(int r, int* ptr, int rank, int size) {
 	
 	// define a method to modify the range of computation with respect to the processes
 	// initated.
-	for (i = 0; i < r; i++){
+	for (int i = 0; i < r; i++){
 		fact *= i;
 	}
 	int NumberOfTwoByTwos = fact / 2;
