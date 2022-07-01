@@ -1,0 +1,50 @@
+#include <stdio.h>
+#include <math.h>
+#include <stdlib.h>
+
+int determinate(int x, int y) {
+	
+
+	int upperLimit = x; int ans = 0;
+
+	// define the arrays for each variabe
+	int* inner_detArray = (int*)calloc(upperLimit, sizeof(int));
+	int* signArray = (int*)calloc(upperLimit, sizeof(int));
+	int* basicArray = (int*)calloc(upperLimit, sizeof(int));
+
+	// values to update
+	int inner_det = 10, basic = 31, sign = -1;
+
+	for (int i = 0; i < upperLimit; i++) {
+
+		inner_det = inner_det + 10;
+		basic = basic + 1;
+
+		*(inner_detArray + y) = inner_det;
+		*(basicArray + y) = basic;
+		*(signArray + y) = sign;
+		sign = sign * -1;
+		y++;
+	}
+
+	for (int i = 0; i < y; i++) {
+		printf("The inner det array is %d \n", inner_detArray[i]);
+		printf("The baisc array is %d \n", basicArray[i]);
+		printf("The sign array is %d \n", signArray[i]);
+
+		// generate a cumulative solution
+		ans = inner_detArray[i] * basicArray[i] * signArray[i] + ans;
+	}
+	return ans;
+
+}
+
+int main() {
+
+	int x = 3;
+	int y = 0;
+	int ans = determinate(x, y);
+	printf("\n -------------The main functio reports: %d------------- \n", ans);
+
+}
+
