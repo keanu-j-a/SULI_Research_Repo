@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <mpi.h>
+#include <iostream>
 
 void LUDecomposition(int rank, int size, int r, int** arrayInFunction) {
 	/* Define inital varaibles and arrays */
@@ -27,22 +28,26 @@ void LUDecomposition(int rank, int size, int r, int** arrayInFunction) {
 					/* Generate U Matrix */
 					for (int i = k; i < r; i++) {
 						sum = 0;
-						for (int p = 0; p < k - 1; p++) {
-							sum += upperTArray[i][p] * lowerTArray[p][k];
+
+						for (int p = 0; p < k; p++) {
+							sum += lowerTArray[k][p] * upperTArray[p][i];
 						}
-						upperTArray[k][i] = arrayInFunction[i][k] - sum;
+						upperTArray[k][i] = arrayInFunction[k][i] - sum;
 					}
 
 					/* Generate L matrix */
-					for (int j = k + 1; j < r; j++) {
+					for (int i = k; i < r; i++) {
 						sum = 0;
-						for (int p = 0; p < k - 1; p++) {
-							sum += upperTArray[k][p] * lowerTArray[p][j];
+
+						for (int p = 0; p < k; p++) {
+							sum += lowerTArray[i][p] * upperTArray[p][k];
 						}
-						lowerTArray[j][k] = (arrayInFunction[k][j] - sum) / lowerTArray[k][k];
+						lowerTArray[i][k] = (arrayInFunction[i][k] - sum) / lowerTArray[k][k];
 					}
 
+					lowerTArray[k][k] = 1;
 				}
+
 
 				/* Print the contents of the L matrix */
 				printf(" This is the L Matrix: \n ");
@@ -89,14 +94,15 @@ int main(int argc, char* argv[]) {
 				}
 
 				/* Further define 2D memory heap */
-				for (int i = 0; i < 10; i++) {
+				for (int i = 0; i < r; i++) {
 					arrayInFunction[i] = (int*)calloc(c, sizeof(int*));
 				}
 
 				/* Assign random numbers to memory heap */
 				for (int i = 0; i < r; i++) {
 					for (int j = 0; j < c; j++) {
-						arrayInFunction[i][j] = numberArray[u];
+						// arrayInFunction[i][j] = numberArray[u];
+						std::cin >> arrayInFunction[i][j];
 						u++;
 					}
 				}
@@ -105,7 +111,8 @@ int main(int argc, char* argv[]) {
 				printf("This is the origional matrix: \n");
 				for (int i = 0; i < r; i++) {
 					printf("[ ");
-					for (int j = 0; j < r; j++) {
+					for (int j = 0; j < r; j
+						++) {
 						printf("%d ", arrayInFunction[i][j]);
 					}
 					printf(" ] \n");
