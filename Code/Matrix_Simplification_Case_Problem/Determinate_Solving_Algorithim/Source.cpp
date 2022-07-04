@@ -1,172 +1,153 @@
-#include <mpi.h>
 #include <stdio.h>
-#include <math.h>
 #include <stdlib.h>
-#include <time.h>
+#include <mpi.h>
+#include <math.h>
 
-/*
-Modified on: 06/29/2022
-Keanu J. Ammons
+void LUDecomposition(int rank, int size, int r, int** arrayInFunction) {
 
-INL MPI Determinate Matrix Solver
+	/* Define inital varaibles and arrays */
+	int c = r;
+	long double sum = 0;
 
-This code will be an MPI implementation of the matrix solver commonly
-found in various C textbooks. The determinate solver shown is able
-to solve any n x n matrix given a vaild input. Moreover, the use of MPI
-allows the matrix to be much larger than traditional matricies. MPI aids
-the computation time of the matrix.
-*/
+	/* Define the L and U arrays */
+	long double** lowerTArray = (long double**)calloc(r, sizeof(long double*));
+	long double** upperTArray = (long double**)calloc(r, sizeof(long double*));
 
-int determinate_solver(int r, int* ptr, int rank, int size) {
+	/* Define the range of values in which processes will operate */
+	int upperLimit = r;
+	int start_val = abs(rank - (r - 1));
 
-	int ans = 0, a = 0, b = 0, c = 0, d = 0;
-	int inner_sol = 0, inner_det = 0, fact = 1, y = 0, TwoByTwoCount = 0;
 
-	// define a method to modify the range of computation with respect to the processes
-	// initated.
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-	// will likely need to make this section a function argument to prevent
-	// buffer overruns with each iteration.
-	for (int i = 1; i < r + 1; i++) {
-		fact *= i;
-	}
-	int NumberOfTwoByTwos = fact / 2;
-	int upperLimit = NumberOfTwoByTwos;
-	int start_val = rank * ceil(upperLimit / size) + 1, end_val;
-
-	printf("My value is %d", upperLimit);
-
-	// define the arrays for each variabe
-	int* inner_detArray = (int*)calloc(upperLimit, sizeof(int));
-	int* signArray = (int*)calloc(upperLimit, sizeof(int));
-	int* basicArray = (int*)calloc(upperLimit, sizeof(int));
-
-	if (rank == (size - 1)) {
-		end_val = upperLimit;
-	}
-	else {
-		end_val = start_val + ceil(upperLimit / size) - 1;
-	}
-
-	// include conditions for when a 1x1 or
-	// 2x2 matrix is included.
-	if (r == 1 || r == 2) {
-		if (r == 1) {
-			ans = ptr[0];
-		}
-		else {
-			a = ptr[0];
-			b = ptr[1];
-			c = ptr[2];
-			d = ptr[3];
-			ans = (a * d) - (b * c);
-		}
-	}
-	else {
-
-		int i, j, k, l, n = 0, sign = +1, basic, element;
-
-		// define a new pointer array to take into account
-		// that a sub-matrix will be created from the larger
-		// matrix. This is apart of the recursive sol'n.
-		int* q = (int*)calloc(((r - 1) * (r - 1)), sizeof(int));
-
-		if (rank == 0) {
-			// 0   // r
-			for (int i = 0; i < r; i++) {
-				l = 0;
-				n = 0;
-				// note that the value of i is here.
-				basic = *(ptr + i); // may need to change i when implementing an MPI solution
-
-				for (int j = 0; j < r; j++) {
-
-					for (k = 0; k < r; k++) {
-						element = *(ptr + l);
-						if ((j == 0) || (i == k));
-						else
-						{
-							*(q + n) = element;
-							n = n + 1;
-						}
-						l = l + 1;
-					}
+				/* Further define the L and U matrix values */
+				for (int n = 0; n < c; n++) {
+					lowerTArray[n] = (long double*)calloc(r, sizeof(long double));
 				}
-				inner_det = determinate_solver(r - 1, q, rank, size); /* define rank and size  */
-				inner_detArray[y] = inner_det;
-				basicArray[y] = basic;
-				signArray[y] = sign;
-				sign = sign * -1;
-				y = y + 1;
-				/* check and see if the number of 2x2 matrix values corrospond to the upperLimit, if so, broadcast */
+				for (int n = 0; n < c; n++) {
+					upperTArray[n] = (long double*)calloc(r, sizeof(long double));
+				}
 
+				/* Produce both L & U triangular matricies */
+				// could implement MPI here
+				for (int k = 0; k < r ; k++) {
 
-				if (r - 1 == 2) {
-					TwoByTwoCount++;
-					if (TwoByTwoCount == NumberOfTwoByTwos) {
-						MPI_Bcast(inner_detArray, y, MPI_INT, 0, MPI_COMM_WORLD);
-						MPI_Bcast(basicArray, y, MPI_INT, 0, MPI_COMM_WORLD);
-						MPI_Bcast(signArray, y, MPI_INT, 0, MPI_COMM_WORLD);
+					lowerTArray[k][k] = 1;
+
+					if (rank == 0) {
+						/* Generate U Matrix */
+						for (int i = k; i < r; i++) {
+							sum = 0;
+
+							for (int p = 0; p < k; p++) {
+
+								sum += lowerTArray[k][p] * upperTArray[p][i];
+
+							}
+							upperTArray[k][i] = arrayInFunction[k][i] - sum;
+
+						}
 					}
+
+
+					if (rank == 1) {
+						/* Generate L matrix */
+						for (int i = k; i < r; i++) {
+							sum = 0;
+
+							for (int p = 0; p < k; p++) {
+
+								sum += lowerTArray[i][p] * upperTArray[p][k];
+
+							}
+							lowerTArray[i][k] = (arrayInFunction[i][k] - sum) / lowerTArray[k][k];
+						}
+					}
+
+					lowerTArray[k][k] = 1;
+				}
+
+
+				/* Print the contents of the L matrix */
+				
+				printf(" This is the L Matrix from rank %d \n ", rank);
+				for (int i = 0; i < r; i++) {
+					printf("[ ");
+					for (int j = 0; j < r; j++) {
+						printf("%lf ", lowerTArray[i][j]);
+					}
+					printf(" ]\n");
 				}
 				
-			}
-			for (int i = start_val; i < end_val; i++) {
-				inner_sol = signArray[start_val] * basicArray[start_val] * inner_detArray[start_val];
-				ans = ans + inner_sol;
-			}
-		}
 
-		printf("The final solution is: %d from rank %d \n \n", ans, rank);
-	}
-	return ans;
+				// printf("\n");
+
+				/* Print the contents of the U matrix */
+			
+				printf(" This is the U Matrix from rank %d \n ", rank);
+				for (int i = 0; i < r; i++) {
+					printf("[ ");
+					for (int j = 0; j < r; j++) {
+						printf("%lf ", upperTArray[i][j]);
+					}
+					printf(" ] \n");
+				}
+			
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
 }
 
 int main(int argc, char* argv[]) {
 
+	/* Initalize the MPI variables to be used in this code */
 	MPI_Init(&argc, &argv);
-	int rank, size, recieve_buffer = 0;
+	int rank, size;
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
 
-	int r = 3, c = r, numberOfNumbers, ans = 0;
-	numberOfNumbers = r * c;
-	int* numberArray = (int*)calloc(numberOfNumbers, sizeof(int));		// a pointer array where we will define the numbers of our matrix.
-	int* arrayInFunction = (int*)calloc(numberOfNumbers, sizeof(int));	// the actual array that will go into the determinate.
+	/* Define inital variables */
+	int r = 3, c = r, u = 0;
+	int* numberArray = (int*)calloc(r * c, sizeof(int));
+	int** arrayInFunction = (int**)calloc(r, sizeof(int*));
 
-	// produce randomly generated numbers
-	for (int i = 0; i < numberOfNumbers; i++) {
-
-		numberArray[i] = rand() % 100;
-		if (rank == 0) {
-			printf("My number is: %d \n \n", numberArray[i]);
-		}
+	/* Produce randomly generated numbers */
+	srand(100);
+	for (int i = 0; i < r * c; i++) {
+		numberArray[i] = rand() / 100;
 	}
 
-	// assign randomly generated numbers to a matrix.
-	int k, u = 0;
+	/* Further define 2D memory heap */
 	for (int i = 0; i < r; i++) {
+		arrayInFunction[i] = (int*)calloc(c, sizeof(int*));
+	}
 
+	/* Assign random numbers to memory heap */
+	for (int i = 0; i < r; i++) {
 		for (int j = 0; j < c; j++) {
-
-			k = numberArray[u];
-
-			// arrayInFunction is the actual value that we will pass into
-			// the determinate function.
-			*(arrayInFunction + i * c + j) = k;
+			arrayInFunction[i][j] = numberArray[u];
 			u++;
-
 		}
 	}
 
-	ans = determinate_solver(r, arrayInFunction, rank, size);
-	/*
-	MPI_Reduce(&ans, &recieve_buffer, 1, MPI_INT, MPI_SUM, 0, MPI_COMM_WORLD);
-	if (rank == 0){
-		printf("Answer is: %d", recieve_buffer);
+	/* Print the contents of the origional matrix for validation */
+	if (rank == 0) {
+		printf("This is the origional matrix: \n");
+		for (int i = 0; i < r; i++) {
+			printf("[ ");
+			for (int j = 0; j < r; j
+				++) {
+				printf("%d ", arrayInFunction[i][j]);
+			}
+			printf(" ] \n");
+		}
+		printf("\n");
 	}
-	*/
 
+	/* Call the function */
+	LUDecomposition(rank, size, r, arrayInFunction);
+
+	/* Finalize the program */
 	MPI_Finalize();
 	return 0;
 }
