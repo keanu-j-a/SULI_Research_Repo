@@ -3,7 +3,30 @@
 #include <mpi.h>
 #include <math.h>
 
+/*
+
+Keanu J. Ammons
+Modified on: 7/4/2022
+Idaho National Lab (INL) Computation Nuclear Engineering
+
+This code is able to produce an LU matrix given a coefficent matrix. The code works by utilizng 
+the gaussian elimination method and MPI. The current MPI implmentation is not working as intended. Further
+patches will be added to this code to ensure proper working order.  Moreover, this code, along with the determinate
+solver, will be used as an opening example of MPI for the SULI research paper
+
+*/
+
 void LUDecomposition(int rank, int size, int r, int** arrayInFunction) {
+	
+/*
+
+The arguments for this code function is as follows:
+1.) 'rank'......................The rank of every process in the system
+2.) 'size'......................The number of processes in the system
+3.) 'r'.........................The number of rows in the n x n matrix
+4.) 'arrayInFunction'...........The 2D array of numbers to be used to generate the A matrix
+
+*/
 
 	/* Define inital varaibles and arrays */
 	int c = r;
@@ -92,6 +115,13 @@ void LUDecomposition(int rank, int size, int r, int** arrayInFunction) {
 }
 
 int main(int argc, char* argv[]) {
+	
+	/*
+	
+	This is the main body of the code. Most of the code in this section displays how to correctly generate 
+	and format array data for the matrix solver.
+	
+	*/
 
 	/* Initalize the MPI variables to be used in this code */
 	MPI_Init(&argc, &argv);
@@ -104,38 +134,38 @@ int main(int argc, char* argv[]) {
 	int* numberArray = (int*)calloc(r * c, sizeof(int));
 	int** arrayInFunction = (int**)calloc(r, sizeof(int*));
 
-	/* Produce randomly generated numbers */
-	srand(100);
-	for (int i = 0; i < r * c; i++) {
-		numberArray[i] = rand() / 100;
-	}
+				/* Produce randomly generated numbers */
+				srand(100);
+				for (int i = 0; i < r * c; i++) {
+					numberArray[i] = rand() / 100;
+				}
 
-	/* Further define 2D memory heap */
-	for (int i = 0; i < r; i++) {
-		arrayInFunction[i] = (int*)calloc(c, sizeof(int*));
-	}
+				/* Further define 2D memory heap */
+				for (int i = 0; i < r; i++) {
+					arrayInFunction[i] = (int*)calloc(c, sizeof(int*));
+				}
 
-	/* Assign random numbers to memory heap */
-	for (int i = 0; i < r; i++) {
-		for (int j = 0; j < c; j++) {
-			arrayInFunction[i][j] = numberArray[u];
-			u++;
-		}
-	}
+				/* Assign random numbers to memory heap */
+				for (int i = 0; i < r; i++) {
+					for (int j = 0; j < c; j++) {
+						arrayInFunction[i][j] = numberArray[u];
+						u++;
+					}
+				}
 
-	/* Print the contents of the origional matrix for validation */
-	if (rank == 0) {
-		printf("This is the origional matrix: \n");
-		for (int i = 0; i < r; i++) {
-			printf("[ ");
-			for (int j = 0; j < r; j
-				++) {
-				printf("%d ", arrayInFunction[i][j]);
-			}
-			printf(" ] \n");
-		}
-		printf("\n");
-	}
+				/* Print the contents of the origional matrix for validation */
+				if (rank == 0) {
+					printf("This is the origional matrix: \n");
+					for (int i = 0; i < r; i++) {
+						printf("[ ");
+						for (int j = 0; j < r; j
+							++) {
+							printf("%d ", arrayInFunction[i][j]);
+						}
+						printf(" ] \n");
+					}
+					printf("\n");
+				}
 
 	/* Call the function */
 	LUDecomposition(rank, size, r, arrayInFunction);
