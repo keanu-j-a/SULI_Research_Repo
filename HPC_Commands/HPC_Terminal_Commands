@@ -20,7 +20,13 @@
 
 5.) Run an MPI program:
 
+  ls
+
 navigate to the DIRECTORY with the code, type the following:
 
   mpicc foo.c
   mpiexec -n 4 ./a.out
+
+6.) How to compile a program with flags:
+
+  mpicc foo.c -lm
