@@ -15,10 +15,20 @@ void LUDecomposition(int rank, int size, int r, int** arrayInFunction) {
 
 	/* Define the range of values in which processes will operate */
 	int upperLimit = r;
+		// waas start_val
 	int start_val = abs(rank - (r - 1));
 
+	/* Define the buffers for one-sided communication */
+	long double windowUpperT = 0, revieveUpperT = 0;
+	long double windowLowerT = 0, recieveLowerT = 0;
+	MPI_Win window;
+	MPI_Win_create(&windowUpperT, sizeof(long double), sizeof(long double), MPI_INFO_NULL, MPI_COMM_WORLD, &window);
+	MPI_Win_create(&windowLowerT, sizeof(long double), sizeof(long double), MPI_INFO_NULL, MPI_COMM_WORLD, &window);
+	MPI_Request request;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////
+	
+	MPI_Win_fence(0, window);
 
 				/* Further define the L and U matrix values */
 				for (int n = 0; n < c; n++) {
@@ -29,73 +39,76 @@ void LUDecomposition(int rank, int size, int r, int** arrayInFunction) {
 				}
 
 				/* Produce both L & U triangular matricies */
-				for (int k = start_val; k < r - rank; k++) {
+				for (int k = 0; k < r; k++) {
 					lowerTArray[k][k] = 1;
 
 					/* Generate U Matrix */
 					for (int i = k; i < r; i++) {
 						sum = 0;
 
-						for (int p = 0; p < k; p++) {
-							sum += lowerTArray[k][p] * upperTArray[p][i];
-						}
-						upperTArray[k][i] = arrayInFunction[k][i] - sum;
-						if (rank == 2) {
-							MPI_Send(&upperTArray[k][i], 1, MPI_LONG_DOUBLE, 1, 0, MPI_COMM_WORLD);
-						}
-					}
+							/* Don't do any MPI within this for loop */
+							for (int p = 0; p < k; p++) {
+								sum += lowerTArray[k][p] * upperTArray[p][i];
 
+							}
+						upperTArray[k][i] = arrayInFunction[k][i] - sum;
+						x = upperTArray[k][i];
+						windowUpperT = x;
+
+						if (rank == 2) {
+							MPI_Put(&windowUpperT, 1, MPI_LONG_DOUBLE, 2, 0, 1, MPI_LONG_DOUBLE, window);
+							printf("I have the value %lf from rank %d \n", windowLowerT, rank);
+						}
+
+					}
 
 					/* Generate L matrix */
 					for (int i = k; i < r; i++) {
 						sum = 0;
 
-						for (int p = 0; p < k; p++) {
-							sum += lowerTArray[i][p] * upperTArray[p][k];
-							// printf("The lower T array is %lf \n \n", upperTArray[p][k]);
-						}
-						
+							/* Don't do any MPI within this for loop */
+							for (int p = 0; p < k; p++) {
+								sum += lowerTArray[i][p] * upperTArray[p][k];
+
+							}
 						lowerTArray[i][k] = (arrayInFunction[i][k] - sum) / lowerTArray[k][k];
+						y = lowerTArray[i][k];
+						windowLowerT = y;
+
 						if (rank == 2) {
-							MPI_Send(&lowerTArray[i][k], 1, MPI_LONG_DOUBLE, 1, 1, MPI_COMM_WORLD);
+							MPI_Put(&windowLowerT, 1, MPI_LONG_DOUBLE, 1, 0, 1, MPI_LONG_DOUBLE, window);
+							printf("I have the value %lf from rank %d \n", windowLowerT, rank);
 						}
-
-					}
-					if (rank == 1) {
-						MPI_Recv(&x, 1, MPI_LONG_DOUBLE, 2, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
-					}
-
-					if (rank == 1) {
-						MPI_Recv(&y, 1, MPI_LONG_DOUBLE, 2, 0, MPI_COMM_WORLD, MPI_STATUS_IGNORE);
 					}
 
 					lowerTArray[k][k] = 1;
 				}
 
-
-				/* Print the contents of the L matrix */
-				printf(" This is the L Matrix from rank %d \n ", rank);
-				for (int i = 0; i < r; i++) {
-					printf("[ ");
-					for (int j = 0; j < r; j++) {
-						printf("%lf ", lowerTArray[i][j]);
+				
+					/* Print the contents of the L matrix */
+					printf(" This is the L Matrix from rank %d \n ", rank);
+					for (int i = 0; i < r; i++) {
+						printf("[ ");
+						for (int j = 0; j < r; j++) {
+							printf("%lf ", lowerTArray[i][j]);
+						}
+						printf(" ]\n");
 					}
-					printf(" ]\n");
-				}
 
+					printf("\n");
 
-				printf("\n");
-
-				/* Print the contents of the U matrix */
-				printf(" This is the U Matrix from rank %d \n ", rank);
-				for (int i = 0; i < r; i++) {
-					printf("[ ");
-					for (int j = 0; j < r; j++) {
-						printf("%lf ", upperTArray[i][j]);
+					/* Print the contents of the U matrix */
+					printf(" This is the U Matrix from rank %d \n ", rank);
+					for (int i = 0; i < r; i++) {
+						printf("[ ");
+						for (int j = 0; j < r; j++) {
+							printf("%lf ", upperTArray[i][j]);
+						}
+						printf(" ] \n");
 					}
-					printf(" ] \n");
-				}
+				
 
+	MPI_Win_fence(0, window);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -134,16 +147,18 @@ int main(int argc, char* argv[]) {
 				}
 
 				/* Print the contents of the origional matrix for validation */
-				printf("This is the origional matrix: \n");
-				for (int i = 0; i < r; i++) {
-					printf("[ ");
-					for (int j = 0; j < r; j
-						++) {
-						printf("%d ", arrayInFunction[i][j]);
+				if (rank == 0) {
+					printf("This is the origional matrix: \n");
+					for (int i = 0; i < r; i++) {
+						printf("[ ");
+						for (int j = 0; j < r; j
+							++) {
+							printf("%d ", arrayInFunction[i][j]);
+						}
+						printf(" ] \n");
 					}
-					printf(" ] \n");
+					printf("\n");
 				}
-				printf("\n");
 
 	/* Call the function */
 	LUDecomposition(rank, size, r, arrayInFunction);
