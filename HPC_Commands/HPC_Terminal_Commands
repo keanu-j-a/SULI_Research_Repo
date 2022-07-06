@@ -30,3 +30,22 @@ navigate to the DIRECTORY with the code, type the following:
 6.) How to compile a program with flags:
 
   mpicc foo.c -lm
+  
+ 7.) Run a C program and name the output file:
+ 
+ mpicc foo.c -o run_mpi
+ 
+#########################################################################################################################################################################
+                                                                    HPC COMMANDS SAWTOOTH 2
+#########################################################################################################################################################################
+
+1.) MVAPICH2
+example on how to specify select, ncpus, mpiprocs, and walltime with qsub
+
+  qsub -l select=4:ncpus=8:mpiprocs=8 your_output_file
+
+2.) example on how to specify select, ncpus, mpiprocs, and walltime with qsub with A DEFINED PROJECT
+
+  qsub -l select=4:ncpus=8:mpiprocs=8 -P moose your_output_file
+
+3.) In general, it is not recommended to use -I (for interactive sessions) in scaleability studies.
