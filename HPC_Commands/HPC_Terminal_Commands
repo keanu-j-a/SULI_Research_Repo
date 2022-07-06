@@ -42,7 +42,7 @@ navigate to the DIRECTORY with the code, type the following:
 1.) MVAPICH2
 example on how to specify select, ncpus, mpiprocs, and walltime with qsub
 
-  qsub -l select=4:ncpus=8:mpiprocs=8 your_output_file
+  qsub -l select=4:ncpus=8:mpiprocs=8 walltime=03:00:00 -P moose your_output_file
 
 2.) example on how to specify select, ncpus, mpiprocs, and walltime with qsub with A DEFINED PROJECT
 
