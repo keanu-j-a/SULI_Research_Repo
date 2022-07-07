@@ -1,3 +1,3 @@
-# MPI Code Examples
+                                                                        MPI Code Examples
 
 This section includes all of the code developed during the SULI INL internship for the sake of learning how to effectively use MPI in C. Code examples are provided based on the function name. Within each folder is a fully commented example on how to use the MPI function, in addition to instructions on how to format data for parallel processing (ie. heap memory allocation). Moreover, a Q and A section is provided in this directory. This file contains general answers to common questions, as well as Stack Overflow links that directly answer questions developed throughout the SULI internship.
