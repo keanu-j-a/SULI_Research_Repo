@@ -1,0 +1,3 @@
+                                                               Important Code Highlights 
+                                                               
+This code directory includes folders for all of the problem statments analyzed throughout the SULI internship. The Fibb_Sequence_Solver was the first problem statement produced during the internship and served the purpose of acting as a basic exercise to solve using MPI. Additional problem statements are included, although these are much more complicated than the Fibb_Sequence_Solver. Case problems serve as a effective motivating examples to introduce the concept of MPI and algorithim scalability.
