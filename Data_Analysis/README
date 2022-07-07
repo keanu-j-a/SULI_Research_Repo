@@ -1,0 +1,3 @@
+                                                                       Data Analysis Scripts
+
+This directory conatins all of the Python and Jupyter Notebook programs used to analyzed real-time data gathered from the Sawtooth supercomputer. Results from the scripts provided will be used directly in a reserach paper (published through INL) pertaining to parallel algorithim scaleability studies.
