@@ -153,7 +153,7 @@ int main(int argc, char* argv[]) {
 	/* Define inital variables */
 	int r = 3, c = r, u = 0;
 	int* numberArray = (int*)calloc(r * c, sizeof(int));
-	long double** arrayInFunction = (long double**)calloc(r, sizeof(int));
+	long double** arrayInFunction = (long double**)calloc(r, sizeof(long double*));
 
 				/* Produce randomly generated numbers */
 				srand(100);
