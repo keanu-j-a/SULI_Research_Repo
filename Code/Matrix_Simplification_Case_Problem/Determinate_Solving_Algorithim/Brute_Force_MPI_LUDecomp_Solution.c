@@ -154,7 +154,7 @@ int main(int argc, char* argv[]) {
 	/* Define inital variables */
 	int r = 3, c = r, u = 0;
 	int* numberArray = (int*)calloc(r * c, sizeof(int));
-	long double** arrayInFunction = (long double**)calloc(r, sizeof(int*));
+	long double** arrayInFunction = (long double**)calloc(r, sizeof(int));
 
 				/* Produce randomly generated numbers */
 				srand(100);
@@ -164,7 +164,7 @@ int main(int argc, char* argv[]) {
 
 				/* Further define 2D memory heap */
 				for (int i = 0; i < r; i++) {
-					arrayInFunction[i] = (long double*)calloc(c, sizeof(long double*));
+					arrayInFunction[i] = (long double*)calloc(c, sizeof(long double)); // other issue was here
 				}
 
 				/* Assign random numbers to memory heap */
