@@ -37,7 +37,6 @@ void LUDecomposition(int rank, int size, int r, long double** arrayInFunction) {
 	/* Define the L and U arrays */
 	long double** lowerTArray = (long double**)calloc(r, sizeof(long double*));
 	long double** upperTArray = (long double**)calloc(r, sizeof(long double*));
-	long double* rowk = (long double*)calloc(r, sizeof(long double*));
 
 	/* MPI Request */
 	MPI_Request request;
