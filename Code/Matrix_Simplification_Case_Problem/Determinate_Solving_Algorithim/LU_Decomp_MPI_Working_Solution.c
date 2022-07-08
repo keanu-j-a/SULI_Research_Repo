@@ -56,6 +56,27 @@ void LUDecomposition(int rank, int size, int r, long double** arrayInFunction) {
 						}
 					}
 				}
+	
+				/*
+				
+					for (int k = 0; k < r - 1; k++) {
+					// MPI_Bcast(&arrayInFunction[k][j], r, MPI_LONG_DOUBLE, rank, MPI_COMM_WORLD);
+					// if (k < r) {
+						for (int i = k + 1; i < r; i++) {
+							lowerTArray[i][k] = arrayInFunction[i][k] / arrayInFunction[k][k];
+							printf("This is lower %lf \n", lowerTArray[i][k]);
+					// 	}
+					}
+					// MPI_Bcast(&lowerTArray[i][k], r, MPI_LONG_DOUBLE, rank, MPI_COMM_WORLD);
+					for (int j = k + 1; j < r; j++) {
+						for (int i = k + 1; i < r; i++) {
+							arrayInFunction[i][j] = arrayInFunction[i][j] - lowerTArray[i][k] * arrayInFunction[k][j];
+							printf("This is upper %lf \n", arrayInFunction[i][j]);
+						}
+					}
+				}
+				
+				*/
 
 				/* Assign 0s to the U matrix */
 				for (int m = 0; m < r; m++) {
