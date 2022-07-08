@@ -1,0 +1,5 @@
+                                                                        Working Program Updates
+
+I thought the LU deocomposition solution was valid... turns out I was wrong **angrily shakes fist**. The numbers were incorrect by a margin of about 20 - 30%.
+
+A new solution using the start_val and end_val products will be presneted soon. This method should complete the goal of having an MPI algorithim in the LU decomposution process. Although this new method only makes use of MPI in the individual calculations (rather than the entire row or column.) Technically this method is a brute force tatic, and does not make use of 2D coarse grain cylic mapping.
