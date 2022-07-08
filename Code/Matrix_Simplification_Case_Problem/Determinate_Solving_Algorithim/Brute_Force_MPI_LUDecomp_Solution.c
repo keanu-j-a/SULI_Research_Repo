@@ -10,7 +10,7 @@ Modified on: 07/8/2022
 Idaho National Labratory (INL) Computational Nuclear Engineering
 
 This code is a best attempt at implementing MPI into a n x n matrix LU decomposition solver. The solution for this algorithim
-was sucessfully verified against a 3 x 3 matrix, although further testing is needed for much larger matrix values. The ultimate goal 
+was sucessfully verified against a 3 x 3 matrix, although further testing is needed for much larger matrix values. The ultimate goal
 is to apply this code against a 1000 x 1000 size matrix, validate the output, and observe speedup % after designating N processes
 on the sawtooth supercomputing cluster. The code shown here will be compared to the determinate solving algorithim (found in the Github
 repository).
@@ -18,16 +18,16 @@ repository).
 */
 
 void LUDecomposition(int rank, int size, int r, long double** arrayInFunction) {
-	
+
 	/*
-	
+
 	The arguments of the LU decomposition function are as follows
-	
+
 	1.) 'rank'.......................The definition of each processes's individual designation (0 to size - 1)
 	2.) 'size'.......................The overall number of processes in the system
 	3.) 'r'..........................The row (and column) of the n x n square matrix
 	4.) 'arrayInFunction'............The n x n (2D) heap memory allocation that will hold the numbers for the A matrix.
-	
+
 	*/
 
 	/* Define inital varaibles and arrays */
@@ -45,6 +45,10 @@ void LUDecomposition(int rank, int size, int r, long double** arrayInFunction) {
 	// Define the range of values in which processes will operate
 	int upperLimit = r;
 	int start_val = rank * ceil(upperLimit / size), end_val;
+
+	// generate an algorithim that defines the range of
+	// each process to handle for the fibb_sequence problem.
+
 	if (rank == (size - 1)) {
 		end_val = upperLimit - 1;
 	}
@@ -52,7 +56,7 @@ void LUDecomposition(int rank, int size, int r, long double** arrayInFunction) {
 		end_val = start_val + ceil(upperLimit / size);
 	}
 
-	// (previously attempted ranged rank)
+
 	// long int end_val = abs(rank - (r - 1));
 
 	// end_val is a ranged ranking algorithim that distributes the matrix work according
