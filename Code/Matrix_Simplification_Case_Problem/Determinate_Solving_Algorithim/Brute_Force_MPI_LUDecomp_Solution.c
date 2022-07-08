@@ -84,7 +84,7 @@ void LUDecomposition(int rank, int size, int r, long double** arrayInFunction) {
 						for (int i = k + 1; i < r; i++) {
 							for (int p = start_val; p < end_val; p++) {
 								lowerTArray[i][k] = arrayInFunction[i][k] / arrayInFunction[k][k];
-								printf("This is lower %lf from rank %d \n", lowerTArray[i][k], rank);
+								printf("This is lower %Lf from rank %d \n", lowerTArray[i][k], rank);
 							}
 						}
 					}
@@ -93,7 +93,7 @@ void LUDecomposition(int rank, int size, int r, long double** arrayInFunction) {
 						for (int i = k + 1; i < r; i++) {
 							for (int p = start_val; p < end_val; p++) {
 								arrayInFunction[i][j] = arrayInFunction[i][j] - lowerTArray[i][k] * arrayInFunction[k][j];
-								printf("This is upper %lf from rank %d \n", arrayInFunction[i][j], rank);
+								printf("This is upper %Lf from rank %d \n", arrayInFunction[i][j], rank);
 							}
 						}
 					}
@@ -120,7 +120,7 @@ void LUDecomposition(int rank, int size, int r, long double** arrayInFunction) {
 				for (int i = 0; i < r; i++) {
 					printf("[ ");
 					for (int j = 0; j < r; j++) {
-						printf(", %lf", lowerTArray[i][j]);
+						printf(", %Lf", lowerTArray[i][j]);
 					}
 					printf(" ]\n");
 				}
@@ -133,7 +133,7 @@ void LUDecomposition(int rank, int size, int r, long double** arrayInFunction) {
 				for (int i = 0; i < r; i++) {
 					printf("[ ");
 					for (int j = 0; j < r; j++) {
-						printf(", %lf", arrayInFunction[i][j]);
+						printf(", %Lf", arrayInFunction[i][j]);
 					}
 					printf(" ] \n");
 				}
@@ -180,7 +180,7 @@ int main(int argc, char* argv[]) {
 					for (int i = 0; i < r; i++) {
 						printf("[ ");
 						for (int j = 0; j < r; j++) {
-							printf("%lf ", arrayInFunction[i][j]);
+							printf("%Lf ", arrayInFunction[i][j]);
 						}
 						printf(" ] \n");
 					}
