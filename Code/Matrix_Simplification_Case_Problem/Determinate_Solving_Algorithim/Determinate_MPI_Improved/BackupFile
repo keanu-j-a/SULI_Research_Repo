@@ -6,14 +6,11 @@
 #include <mpi.h>
 
 int N = 3;
-std::vector<long double> mat1 (N,0);
+std::vector<long double> mat1(N, 0);
 std::vector<std::vector<long double>> mat(N, mat1);
 
-std::vector<long double> cofact1(N, 0);
-std::vector<std::vector<long double>> cofactors(N, cofact1);
 
-
-void Cofactor(std::vector<std::vector<long double>> &mat, std::vector<std::vector<long double>> &cofactors, int p, int q, int n)
+void Cofactor(std::vector<std::vector<long double>>& mat, std::vector<std::vector<long double>>& cofactors, int p, int q, int n)
 {
 	int i = 0, j = 0;
 
@@ -44,11 +41,15 @@ long double detMatrix(std::vector<std::vector<long double>> &mat, int n, int ran
 {
 	int D = 0; // Initialize result
 
-	int sign = 1; // To st
-
-	// Base case : if matrix contains single element
-	if (n == 1)
+		// Base case : if matrix contains single element
+	if (n == 1) {
 		return mat[0][0];
+	}
+
+	std::vector<long double> cofact1(N, 0);
+	std::vector<std::vector<long double>> cofactors(N, cofact1);
+
+	int sign = 1; // To st
 
 	int upperLimit = N;
 	int start_val = rank * (upperLimit / size);
@@ -63,11 +64,13 @@ long double detMatrix(std::vector<std::vector<long double>> &mat, int n, int ran
 	}
 
 	// Iterate for each element of first row
-	for (int f = start_val; f < end_val; f++)
+	// Iterate for each element of first row
+	for (int f = 0; f < n; f++)
 	{
 		// Getting Cofactor of mat[0][f]
 		Cofactor(mat, cofactors, 0, f, n);
-		D += sign * mat[0][f] * detMatrix(cofactors, n - 1, rank, size);
+		D += sign * mat[0][f]
+			* detMatrix(cofactors, n - 1, rank, size);
 
 		// terms are to be added with alternate sign
 		sign = -sign;
@@ -109,12 +112,12 @@ int main(int argc, char* argv[])
 
 	ans = detMatrix(mat, N, rank, size);
 	long double finalSum = 0;
-	
+
 	/* Allow a collective reduction of all available data from the function */
-	MPI_Reduce(&ans, &finalSum, 1, MPI_LONG_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	// MPI_Reduce(&ans, &finalSum, 1, MPI_LONG_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 
 	// std::cout << ans << std::endl;
-	printf("\n %lf \n", finalSum);
+	printf("\n %lf \n", ans);
 	MPI_Finalize();
 	return 0;
 }
