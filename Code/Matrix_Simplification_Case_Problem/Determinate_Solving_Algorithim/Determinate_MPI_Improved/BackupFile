@@ -110,11 +110,22 @@ int main(int argc, char* argv[])
 
 	// Function call
 
+	auto start = std::chrono::high_resolution_clock::now();
+
 	ans = detMatrix(mat, N, rank, size);
 	long double finalSum = 0;
 
 	/* Allow a collective reduction of all available data from the function */
 	// MPI_Reduce(&ans, &finalSum, 1, MPI_LONG_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+
+	auto end = std::chrono::high_resolution_clock::now();
+
+	std::chrono::duration<double> elapsed_time = end - start;
+
+	if (rank == 0) {
+		std::cout << std::endl << elapsed_time.count() << std::endl;
+	}
+
 
 	// std::cout << ans << std::endl;
 	printf("\n %lf \n", ans);
