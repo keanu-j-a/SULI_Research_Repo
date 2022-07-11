@@ -5,10 +5,11 @@
 #include <iostream>
 #include <mpi.h>
 
-int N = 3;
+int N = 4;
 std::vector<long double> mat1(N, 0);
 std::vector<std::vector<long double>> mat(N, mat1);
 
+std::vector<long double> arr1(360,0);
 
 void Cofactor(std::vector<std::vector<long double>>& mat, std::vector<std::vector<long double>>& cofactors, int p, int q, int n)
 {
@@ -71,6 +72,7 @@ long double detMatrix(std::vector<std::vector<long double>> &mat, int n, int ran
 		Cofactor(mat, cofactors, 0, f, n);
 		D += sign * mat[0][f]
 			* detMatrix(cofactors, n - 1, rank, size);
+		arr1.push_back(D);
 
 		// terms are to be added with alternate sign
 		sign = -sign;
@@ -116,7 +118,7 @@ int main(int argc, char* argv[])
 	long double finalSum = 0;
 
 	/* Allow a collective reduction of all available data from the function */
-	// MPI_Reduce(&ans, &finalSum, 1, MPI_LONG_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	MPI_Reduce(&ans, &finalSum, 1, MPI_LONG_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 
 	auto end = std::chrono::high_resolution_clock::now();
 
@@ -125,10 +127,10 @@ int main(int argc, char* argv[])
 	if (rank == 0) {
 		std::cout << std::endl << elapsed_time.count() << std::endl;
 	}
+	if (rank == 0) {
+		std::cout << finalSum << std::endl;
+	}
 
-
-	// std::cout << ans << std::endl;
-	printf("\n %lf \n", ans);
 	MPI_Finalize();
 	return 0;
 }
