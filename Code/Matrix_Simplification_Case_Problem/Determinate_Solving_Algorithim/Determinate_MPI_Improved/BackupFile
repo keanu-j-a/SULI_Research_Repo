@@ -1,136 +1,228 @@
 #include <stdio.h>
+#include <math.h>
 #include <stdlib.h>
-#include <vector>
-#include <chrono>
-#include <iostream>
 #include <mpi.h>
 
-int N = 4;
-std::vector<long double> mat1(N, 0);
-std::vector<std::vector<long double>> mat(N, mat1);
+/*
 
-std::vector<long double> arr1(360,0);
+Written By Keanu J. Ammons
+Modified on: 07/2/2022
+Idaho National Labratory (INL) Computational Nuclear Engineering
 
-void Cofactor(std::vector<std::vector<long double>>& mat, std::vector<std::vector<long double>>& cofactors, int p, int q, int n)
-{
-	int i = 0, j = 0;
+This code is designed to solve any n x n sized matrix using Cramer's rule. The purpose
+of this code is to demonstrate how MPI may be utilized in calculating the results of a large matrix.
+Cramer's method has factorial complexity, and the number of intermediate solutions needed to calculate
+a solution grow according to the 2 x 2 matrix theorem. Such calculations are recursive, and are either
+wasteful in memory or inefficent in computation time; therefore, multiple methods of matrix determinate
+calculations are needed in order to fully understand what methods are most effective. For the sake of a
+thorough evaluation, this code was produced to verify if, in fact, Cramer's rule is ineffective at solving
+matrix determinates with MPI.
 
-	// Looping for each element of the matrix
-	for (int row = 0; row < n; row++)
-	{
-		for (int col = 0; col < n; col++)
-		{
-			// Copying into temporary matrix
-			if (row != p && col != q)
-			{
-				cofactors[i][j++] = mat[row][col];
+*/
 
-				// Row is filled
-				if (j == n - 1)
-				{
-					j = 0;
-					i++;
-				}
-			}
-		}
-	}
-}
+long long determinate(int r, long long* ptr, int rank, int size, int NumberOfTwoByTwos, int y, long long* inner_detArray, long long* signArray, long long* basicArray) {
 
-/* Recursive function for finding determinant of matrix.
-n is current dimension of mat[][]. */
-long double detMatrix(std::vector<std::vector<long double>> &mat, int n, int rank, int size)
-{
-	int D = 0; // Initialize result
+	/*
+	The arguments for the determinate function are as follows:
+	1.) 'r'...............................The number of rows that exist in the square matrix
+	2.) 'ptr'.............................The list of numbers, properly formatted as a matrix, to solve for the determinate.
+	3.) 'rank'............................The generic identifier for MPI ranks
+	4.) 'size'............................The generic identifier for the number of processes in an MPI algorithim
+	5.) 'NumberOfTwoByTwos'...............The number of 2 x 2 matricies that can be derrived from the parent matrix
+	6.) 'y'...............................The generic iterator for the function. This value is always zero.
+	*/
 
-		// Base case : if matrix contains single element
-	if (n == 1) {
-		return mat[0][0];
-	}
+	// initalize variables
+	long long ans = 0;
+	long long a = 0, b = 0, c = 0, d = 0;
+	long float inner_sol = 0, inner_det = 0, TwoByTwoCount = 0;
 
-	std::vector<long double> cofact1(N, 0);
-	std::vector<std::vector<long double>> cofactors(N, cofact1);
+	// The array size should not change.
+	int start_val = rank * ceil(NumberOfTwoByTwos / size), end_val;
 
-	int sign = 1; // To st
-
-	int upperLimit = N;
-	int start_val = rank * (upperLimit / size);
-	int end_val = 0;
-	long double ans = 0;
-
+	// generate ranged rank
 	if (rank == (size - 1)) {
-		end_val = upperLimit - 1;
+		end_val = NumberOfTwoByTwos;
 	}
 	else {
-		end_val = start_val + (upperLimit / size) - 1;
+		end_val = start_val + ceil(NumberOfTwoByTwos / size);
 	}
 
-	// Iterate for each element of first row
-	// Iterate for each element of first row
-	for (int f = 0; f < n; f++)
-	{
-		// Getting Cofactor of mat[0][f]
-		Cofactor(mat, cofactors, 0, f, n);
-		D += sign * mat[0][f]
-			* detMatrix(cofactors, n - 1, rank, size);
-		arr1.push_back(D);
+	/////////////////////////////////////////////////////////////////////////////////////////////
 
-		// terms are to be added with alternate sign
-		sign = -sign;
+				/* Declare conditions for solving a 2 x 2 matrix */
+				if (r == 1 || r == 2) {
+					if (rank == 0) {
+						if (r == 1) {
+							ans = ptr[0];
+						}
+						else {
+							a = ptr[0];
+							b = ptr[1];
+							c = ptr[2];
+							d = ptr[3];
+							ans = (a * d) - (b * c);
+							// inner_det = ans;
+							// printf("The value of ans det is %d \n \n.", ans);
+						}
+					}
+				}
+				/* Dissolve the matrix into 2 x 2 compoents */
+				else {
+
+					int k, l, n = 0, sign = +1;
+					long long basic, element;
+
+					/* define a new pointer array to take into account. This will be used in defining the sub matrix */
+					long long* q = (long long*)calloc(((r - 1) * (r - 1)), sizeof(long long));
+
+					for (int i = 0; i < r; i++) {
+						l = 0;
+						n = 0;
+
+						/* Instruct rank 0 to decompose the matrix */
+						if (rank == 0) {
+
+							basic = *(ptr + i);
+
+							for (int j = 0; j < r; j++) {
+
+								for (k = 0; k < r; k++) {
+									element = *(ptr + l);
+									if ((j == 0) || (i == k));
+									else
+									{
+										*(q + n) = element;
+										n = n + 1;
+									}
+									l = l + 1;
+								}
+							}
+
+							/* define rank and size */
+							inner_det = determinate(r - 1, q, rank, size, NumberOfTwoByTwos, y, inner_detArray + 1, signArray, basicArray);
+							//printf("The value of inner det is %lf \n \n.", inner_det);
+							*(inner_detArray + y) = inner_det;
+							*(basicArray + y) = basic;
+							*(signArray + y) = sign;
+							sign = sign * -1;
+							y++;
+						}
+
+						/* Check and see if the number of 2x2 matrix values corrospond to the upperLimit, if so, broadcast */
+						/* Must be checked on ALL available processes */
+						//printf("My number of y values is %d and the Numberof2by2s is %d ", y, NumberOfTwoByTwos);
+						if (r - 1 == 2) {
+							TwoByTwoCount++;
+						}
+					}
+				}
+
+	/////////////////////////////////////////////////////////////////////////////////////////////
+
+	if (TwoByTwoCount == NumberOfTwoByTwos) {
+		/* MPI_Bcast must be called by all processes in order to complete */
+		MPI_Bcast(inner_detArray, NumberOfTwoByTwos, MPI_LONG_LONG, 0, MPI_COMM_WORLD);
+		MPI_Bcast(basicArray, NumberOfTwoByTwos, MPI_LONG_LONG, 0, MPI_COMM_WORLD);
+		MPI_Bcast(signArray, NumberOfTwoByTwos, MPI_LONG_LONG, 0, MPI_COMM_WORLD);
 	}
 
-	return D;
+
+	for (int i = start_val; i < end_val; i++) {
+		// generate a cumulative solution
+		ans = inner_detArray[i] * basicArray[i] * signArray[i] + ans;
+		//printf("The value of basic array at %d is %d \n \n.", i, basicArray[i]);
+		//printf("The value of inner det array at %d is %d \n \n.", i, inner_detArray[i]);
+		//printf("The value of sign array at %d is %d \n \n.", i, signArray[i]);
+		// printf("I am rank %d and I have the number %d \n ", rank, inner_detArray[i]);
+		// printf("I am rank %d and I have the number %d \n ", rank, basicArray[i]);
+		// printf("I am rank %d and I have the number %d \n ", rank, signArray[i]);
+	}
+	return ans;
+
 }
 
-// Driver program to test above functions
-int main(int argc, char* argv[])
-{
+
+
+int main(int argc, char* argv[]) {
+
+	/*
+
+	In general, this code works by ordering the master process (process 0) to decompose a parent matrix into three compoents:
+
+	1.) scalar array
+	2.) sign array
+	3.) inner determinate array
+	Based on the number of inner determinates (2 x 2) arrays, a sorting algorithim divides the remaining compuations
+	among all available processes. Subsequently, the master process reduces the solution and compiles the result.
+	The matrix size is perhaps the only limiting factor of this code. Limitations of int_64  datatypes may cause the code
+	to return erronous results if a solution greater than +- 1 x 10 ^19 is generated. Long long int_64 datatypes are used throughout.
+	This code to maximize the size of the possible output and prevent truncation errors and increase accuracy.
+
+	*/
+
+	/* Initalize the MPI variables to be used in this code */
 	MPI_Init(&argc, &argv);
-	int rank, size, start_val, end_val, upperLimit;
+	int rank, size;
 	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
-	long double ans = 0;
 
-	srand(100);
-	for (int i = 0; i < N; i++) {
-		for (int j = 0; j < N; j++) {
-			mat[i][j] = rand() % 12;
-		}
+	/* Initalize basic function variables */
+	int r = 5, c = r;
+	int fact = 1;
+	long long ans = 0, finalSum = 0;
+	long long numberOfNumbers = r * c;
+	long long* numberArray = (long long*)calloc(numberOfNumbers, sizeof(long long));	  /* used in matrix */
+	long long* arrayInFunction = (long long*)calloc(numberOfNumbers, sizeof(long long));  /* passed in function */
+
+
+	/* Calculate the number of 2x2 matrix values that will be generated */
+	for (int i = 1; i <= r; i++) {
+		fact *= i;
 	}
+	int NumberOfTwoByTwos = fact / 2;
 
-	/* Print the contents of the origional matrix for validation */
+	// define the arrays for each variabe
+	long long* inner_detArray = (long long*)calloc(NumberOfTwoByTwos, sizeof(long long));
+	long long* signArray = (long long*)calloc(NumberOfTwoByTwos, sizeof(long long));
+	long long* basicArray = (long long*)calloc(NumberOfTwoByTwos, sizeof(long long));
+
+				/* Produce randomly generated numbers (for the sake of testing) */
+				for (int i = 0; i < numberOfNumbers; i++) {
+
+					numberArray[i] = rand() / 1000;
+					if (rank == 0) {
+						printf("My number is: %d \n \n", numberArray[i]);
+					}
+				}
+
+				/* Assign randomly generated numbers to a matrix */
+				long long k, u = 0;
+				for (long long i = 0; i < r; i++) {
+
+					for (int j = 0; j < c; j++) {
+
+						k = numberArray[u];
+
+						// arrayInFunction is the actual value that we will pass into
+						// the determinate function.
+						*(arrayInFunction + i * c + j) = k;
+						u++;
+
+					}
+				}
+
+				/* call the determinate to solve the problem. Note that the value y should always be 0 */
+				ans = determinate(r, arrayInFunction, rank, size, NumberOfTwoByTwos, 0, inner_detArray, signArray, basicArray);
+				
+	/* Reduce the final solution and print the results */
+	MPI_Reduce(&ans, &finalSum, 1, MPI_LONG_LONG, MPI_SUM, 0, MPI_COMM_WORLD);
 	if (rank == 0) {
-		std::cout << "This the origional matrix : " << std::endl;
-		for (int i = 0; i < N; i++) {
-			std::cout << "[ ";
-			for (int j = 0; j < N; j++) {
-				std::cout << " ," << mat[i][j];
-			}
-			std::cout << " ]" << std::endl;
-		}
-		std::cout << std::endl;
+		printf("This is my final solution %lld \n", finalSum);
 	}
 
-	// Function call
-
-	auto start = std::chrono::high_resolution_clock::now();
-
-	ans = detMatrix(mat, N, rank, size);
-	long double finalSum = 0;
-
-	/* Allow a collective reduction of all available data from the function */
-	MPI_Reduce(&ans, &finalSum, 1, MPI_LONG_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-
-	auto end = std::chrono::high_resolution_clock::now();
-
-	std::chrono::duration<double> elapsed_time = end - start;
-
-	if (rank == 0) {
-		std::cout << std::endl << elapsed_time.count() << std::endl;
-	}
-	if (rank == 0) {
-		std::cout << finalSum << std::endl;
-	}
-
+	/* Finalize and close the program */
 	MPI_Finalize();
 	return 0;
+
 }
