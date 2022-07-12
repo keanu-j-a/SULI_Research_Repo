@@ -46,7 +46,7 @@ example on how to specify select, ncpus, mpiprocs, and walltime with qsub
 
 2.) example on how to specify select, ncpus, mpiprocs, and walltime with qsub with A DEFINED PROJECT
 
-  qsub -l select=4:ncpus=8:mpiprocs=8 -l -P moose your_output_file
+  qsub -l select=4:ncpus=8:mpiprocs=8 -l walltime=03:00:00 -P moose DetV1.out
 
 3.) In general, it is not recommended to use -I (for interactive sessions) in scaleability studies.
 
