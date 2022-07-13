@@ -1,6 +1,6 @@
 This is a list of all Github commands used to complete standard operations at INL:
 
-1.) to push changes to a repo
+1.) to push changes to a repo.
 
     > fork
     > git clone
@@ -21,11 +21,11 @@ This is a list of all Github commands used to complete standard operations at IN
 
     > git push
     
-    (make sure you save chnaged frequently, or nothing will update in GitHub)
+    (make sure you save chnaged frequently, or nothing will update in GitHub).
 
 After this, you should check the Github repo to make sure that everything updated correctly.
 
-2.) This next step is specific to Dr. Gaston's sparse-send-recieve github repo
+2.) This next step is specific to Dr. Gaston's sparse-send-recieve github repo.
 
     > git submodule init
     > git submodule update
@@ -36,4 +36,11 @@ After this, you should check the Github repo to make sure that everything update
     
     (you should only have to do this once)
     
-3.)
+3.) How to run files.
+
+    > mpiexec ./sparse-opt num_neighbors message_size num_iterations
+    
+    (files will need to be updated after each implementation.
+    
+4.)
+
