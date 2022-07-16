@@ -42,5 +42,39 @@ After this, you should check the Github repo to make sure that everything update
     
     (files will need to be updated after each implementation.
     
-4.)
+4.) Github cloning process (from a GitBash terminal)
+
+    (this will explain how to clone a repo and upload entire documents to a repo)
+
+    > navigate to folder you would like to host your github repo
+    > either cd to the appropriate directory OR open a Git Bash terminal at the folder
+
+    > git clone [insert_your_URL_here]
+    > (wait for Github folder to appear in dir)
+    > Cntrl + C ... Cntrl + V the files you want in you into your Github
+    > close, re-open termimal, and cd to the Github file location.
+    > git add -A
+    > remove the # from all files you wish to commit
+    > (once complete) :wq
+    > git push
+
+5.) Git push and pull from VS studio
+
+    > Prepare a file for cloning a Github repo into (if not done already)
+    > If a github repo is prepared, navigate the .C file > right click > open with VS Studio
+    > At the bottom right hand of the program editor, change the Github repo to your dir folder
+    > Once selected, double click the pen icon at the bottom right hand of the page to show solution folder
+    > Make changes to the program as necessary.
+    > Provide the required git commit message.
+    > to push changes, click the "Commit All" dropdown icon, select "Commit all and push"
+    > Sync the file for safekeeping. The push should now be updated to the Github repo.
+
+    (NOTE! if permission errors occur)
+
+    > Navigate to the solutions page displaying all of the changes made to the program.
+    > right click > ignore stash on all files that are not explicity "gitingore" or "your_code_name"
+    > retry sync and commit.
+    > if errors persist, check tsack overflow
+
+
 
