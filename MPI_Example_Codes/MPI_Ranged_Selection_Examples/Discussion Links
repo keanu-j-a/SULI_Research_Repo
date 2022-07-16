@@ -1,0 +1,3 @@
+1.)
+Dynamically computing a reciever for MPI_Send (stack overflow discussion):
+https://stackoverflow.com/questions/72663690/c-mpi-processes-fail-to-respond-after-for-loop

@@ -1,0 +1,32 @@
+#include <mpi.h>
+#include <iostream>
+
+int main(int argc, char* argv[]) {
+	int rank, size;
+	MPI_Init(&argc, &argv);
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+	MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+	// for the gather function, you will need two variables to work with:
+	int data;
+	int GatheredData[4] = { 0 };
+	data = (rank + 1) * 10;  // this just helps the data for each process be unique. This is not necessary, but it helps us visualize the data for this example.
+
+	MPI_Gather(&data, 1, MPI_INT, GatheredData, 1, MPI_INT, 0, MPI_COMM_WORLD);
+	// lets dive into this in detail.
+	// the 'data' argument specifies what we are going to gather from each process (How mny elements will data send us?)
+	// '1' indicates how much of that variable we are going to gather.
+	// MPI_INT specifies the datatype of what we are planning to gather.
+	// GathereData is the array that is going to store the values that we gather. Think of this like a basket. The array holds all the data we collect.
+	// '1' indicates, once again, how much we can expect to gather. This number will generally be the same as the previous 1. (how many elements will GatherData recieve?)
+	// '0' indicates the rank of the process that will handle this process.
+	// MPI_COMM_WORLD will designate how communication processes will work.
+
+	////////////////////////////////VERIFY THIS//////////////////////////////
+	// note that if data is just an it, an & symbol will be necessary.	   //
+	// if data is defined with a *, no need to include an &                //
+	////////////////////////////////VERIFY THIS//////////////////////////////
+
+	MPI_Finalize();
+	return 0;
+}

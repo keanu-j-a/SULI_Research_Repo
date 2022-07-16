@@ -1,0 +1,7 @@
+                                                                  HPC Commands List
+                                                                  
+Throughout the SULI INL internship, daily reseach tasks made extensive use of MPI, MOOSE, and the Sawtooth supercomputer. Various commands are required to properly execute an MPI cluster on the Sawtooth supercomputer. In addition, HPC clusters are organized using PBS command argumnents. Extensive documentation on the HPC PBS command arguments can be found in the following link:
+
+                                    https://community.altair.com/community?id=altair_product_documentation
+
+In general, this directory's sole purpose is to serve as a general refeneces page on which commands to apply to the sawtooth supercomputer.

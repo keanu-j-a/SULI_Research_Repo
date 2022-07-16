@@ -1,0 +1,36 @@
+Q: My MPI Send processes hang after using a dynamically computed reciever, why does this occur?
+  
+  A:
+  When using a dynamically computed reciever in MPI, make sure all processes recieve a message, whether it be a 0 byte message or
+  one with relavent data. View the discussion here:
+
+  https://stackoverflow.com/questions/72663690/c-mpi-processes-fail-to-respond-after-for-loop
+
+Q: MPI program causes the computation time to increase as more processes are added:
+
+  A:
+  There are two reasons for this. First and formost, when designing an MPI program, all tests should be of an adquate size. That is to say,
+  the computation time should be in increments of seconds and not miliseconds. Any time values recorded in miliseconds are likely to be affected by
+  noise. Moreover, when programming an MPI algorithim, remember that 'while' and for 'loops' will increase the serial computation time of the algorithim;
+  therefore reducing the effectiveness of utilizing additional processes. It is recommended that the granuality of the program be observed for
+  proper tests.
+
+  https://stackoverflow.com/questions/72704802/mpi-program-does-not-speed-up-after-implementing-parallel-computing-techniques
+
+Q: How can Cramer's rule be effectively implemented into MPI?
+
+  A: 
+  LU decomposition is actually the best way to avoid bottlenecks with MPI. Otherwise you will be stuck with inefficent calculations wasting memory and/or
+  computation time. Other work also indicates that gaussian elimination techniques may be used as well.
+  
+  https://stackoverflow.com/questions/72811417/assigning-mpi-processes-to-solve-components-of-a-matrix/72816661#72816661
+  
+  https://arxiv.org/pdf/1308.1536.pdf
+  
+  Q: What are some generally useful links for learning about MPI:
+  
+  https://cvw.cac.cornell.edu/mpicc/exercise
+  
+  
+  
+  

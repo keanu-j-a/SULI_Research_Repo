@@ -1,0 +1,55 @@
+1.) Basic environment with GCC and MVAPICH for mpi:
+
+  module load use.moose moose-dev
+
+2.) Purge and reset files:
+
+  [sawtooth2][~]> module purge
+  [sawtooth2][~]> module load openmpi
+  [sawtooth2][~]> which mpicc
+  /apps/local/openmpi/ucx1.9/bin/mpicc
+
+3.) Secondary method of purge and reset:
+
+  module purge
+  module load mvapich2
+
+4.) General MPI command:
+
+  module load openmpi
+
+5.) Run an MPI program:
+
+  ls
+
+navigate to the DIRECTORY with the code, type the following:
+
+  mpicc foo.c
+  mpiexec -n 4 ./a.out
+
+6.) How to compile a program with flags:
+
+  mpicc foo.c -lm
+  
+ 7.) Run a C program and name the output file:
+ 
+ mpicc foo.c -o run_mpi
+ 
+#########################################################################################################################################################################
+                                                                    HPC COMMANDS SAWTOOTH 2
+#########################################################################################################################################################################
+
+1.) MVAPICH2
+example on how to specify select, ncpus, mpiprocs, and walltime with qsub
+
+  qsub -l select=1:ncpus=8:mpiprocs=6 -l walltime=4:0:0 -P moose a.out
+
+2.) example on how to specify select, ncpus, mpiprocs, and walltime with qsub with A DEFINED PROJECT
+
+  qsub -l select=4:ncpus=8:mpiprocs=8 -l walltime=03:00:00 -P moose DetV1.out
+
+3.) In general, it is not recommended to use -I (for interactive sessions) in scaleability studies.
+
+4.) Following a sucessful que on sawtooth, you can run the following without any complications:
+
+  mpirun ./a.out

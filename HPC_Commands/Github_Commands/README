@@ -1,0 +1,46 @@
+This is a list of all Github commands used to complete standard operations at INL:
+
+1.) to push changes to a repo.
+
+    > fork
+    > git clone
+    > cd to the correct directory
+    > git status
+
+    (make changes to the file using a VS code)
+
+    > git status (should produce a different message)
+    > git add --all
+    > git commit -m "Put a random comment here"
+
+    (
+    you may need to specify a username and password:
+    > git config --global user.email "you@example.com"
+    > git config --global user.name "Your Name"
+    )
+
+    > git push
+    
+    (make sure you save chnaged frequently, or nothing will update in GitHub).
+
+After this, you should check the Github repo to make sure that everything updated correctly.
+
+2.) This next step is specific to Dr. Gaston's sparse-send-recieve github repo.
+
+    > git submodule init
+    > git submodule update
+    > cd gslib
+    > make
+    > cd ..
+    > make
+    
+    (you should only have to do this once)
+    
+3.) How to run files.
+
+    > mpiexec ./sparse-opt num_neighbors message_size num_iterations
+    
+    (files will need to be updated after each implementation.
+    
+4.)
+

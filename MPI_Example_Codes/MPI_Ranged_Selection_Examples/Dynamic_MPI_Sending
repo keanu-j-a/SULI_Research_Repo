@@ -1,0 +1,59 @@
+#include <mpi.h>
+#include <stdio.h>
+#include <math.h>
+
+int main(int argc, char* argv[]) {
+
+    int rank = 0; int size; int x = 0; int y = 0;
+    MPI_Init(NULL, NULL);
+    MPI_Status status;
+    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+    MPI_Comm_size(MPI_COMM_WORLD, &size);
+
+    //printf("Available ranks are: %d \n \n", rank); // first rank rollcall
+    //fflush(stdout);
+
+    int num1 = 1; int num2 = 1; int recieve_data1 = 0; int recieve_data2 = 0;
+    int RecieveNum; int SumNum;
+
+    for
+        (int n = 0; n < 16; n++) {
+        // define the sorting algorithim
+        int DeliverTo = (n % 3) + 1;
+        if
+            (rank == 0) {
+
+            // perform the fibb sequence algorithim
+            SumNum = num1 + num2;
+            num1 = num2;
+            num2 = SumNum;
+
+            // send calculated result
+            MPI_Send(&SumNum, 1, MPI_INT, DeliverTo, 1, MPI_COMM_WORLD);
+        }
+        else if (rank == DeliverTo) {
+            // recieve the element integer
+            MPI_Recv(&RecieveNum, 1, MPI_INT, 0, 1, MPI_COMM_WORLD, &status);
+
+            if (RecieveNum % 2 != 0) {
+                RecieveNum = 0;
+            }
+            else {
+                x = x + RecieveNum;
+            }
+
+            // print and flush the buffer
+            // printf("I am process rank %d, and I recieved the number %d. \n", rank, RecieveNum);
+            // fflush(stdout);
+        }
+
+    }
+/*
+
+More code to run...
+
+*/
+MPI_Finalize();
+return 0;
+
+  }

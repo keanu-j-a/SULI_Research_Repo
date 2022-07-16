@@ -1,0 +1,132 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <vector>
+#include <chrono>
+#include <iostream>
+#include <mpi.h>
+
+int N = 4;
+std::vector<long double> mat1(N, 0);
+std::vector<std::vector<long double>> mat(N, mat1);
+
+std::vector<long double> arr1(360, 0);
+
+void Cofactor(std::vector<std::vector<long double>>& mat, std::vector<std::vector<long double>>& cofactors, int p, int q, int n)
+{
+	int i = 0, j = 0;
+
+	// Looping for each element of the matrix
+	for (int row = 0; row < n; row++)
+	{
+		for (int col = 0; col < n; col++)
+		{
+			// Copying into temporary matrix
+			if (row != p && col != q)
+			{
+				cofactors[i][j++] = mat[row][col];
+
+				// Row is filled
+				if (j == n - 1)
+				{
+					j = 0;
+					i++;
+				}
+			}
+		}
+	}
+}
+
+/* Recursive function...How can this be avoided? */
+long double detMatrix(std::vector<std::vector<long double>>& mat, int n, int rank, int size)
+{
+	int D = 0; // Initialize result
+
+		// Base case : if matrix contains single element
+	if (n == 1) {
+		return mat[0][0];
+	}
+
+	std::vector<long double> cofact1(N, 0);
+	std::vector<std::vector<long double>> cofactors(N, cofact1);
+
+	int sign = -1; // To st
+
+	int upperLimit = N;
+	int start_val = rank * (upperLimit / size);
+	int end_val = 0;
+	long double ans = 0;
+
+	if (rank == (size - 1)) {
+		end_val = upperLimit - 1;
+	}
+	else {
+		end_val = start_val + (upperLimit / size) - 1;
+	}
+
+	// Iterate for each element of first row
+	// Iterate for each element of first row
+	for (int f = 0; f < n; f++)
+	{
+		// Getting Cofactor of mat[0][f]
+		if (rank == 0) {
+			sign = -sign;
+			Cofactor(mat, cofactors, 0, f, n);
+			D += sign * mat[0][f] * detMatrix(cofactors, n - 1, rank, size);
+		}
+	}
+	/* Broadcast to various recievers */
+	MPI_Bcast(&arr1[0], n, MPI_LONG_INT, 0, MPI_COMM_WORLD);
+	return D;
+}
+
+// Driver program to test above functions
+int main(int argc, char* argv[])
+{
+	MPI_Init(&argc, &argv);
+	int rank, size, start_val, end_val, upperLimit;
+	MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+	MPI_Comm_size(MPI_COMM_WORLD, &size);
+	long double ans = 0;
+	long double sol = 0;
+
+	srand(100);
+	for (int i = 0; i < N; i++) {
+		for (int j = 0; j < N; j++) {
+			mat[i][j] = rand() % 12;
+		}
+	}
+
+	/* Print the contents of the origional matrix for validation */
+	if (rank == 0) {
+		std::cout << "This the origional matrix : " << std::endl;
+		for (int i = 0; i < N; i++) {
+			std::cout << "[ ";
+			for (int j = 0; j < N; j++) {
+				std::cout << " ," << mat[i][j];
+			}
+			std::cout << " ]" << std::endl;
+		}
+		std::cout << std::endl;
+	}
+
+	// Function call
+
+	auto start = std::chrono::high_resolution_clock::now();
+
+	ans = detMatrix(mat, N, rank, size);
+	// long double finalSum = 0;
+
+	/* Allow a collective reduction of all available data from the function */
+	// MPI_Reduce(&ans, &finalSum, 1, MPI_LONG_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+	
+	auto end = std::chrono::high_resolution_clock::now();
+
+	std::chrono::duration<double> elapsed_time = end - start;
+
+	if (rank == 0) {
+		std::cout << std::endl << elapsed_time.count() << std::endl;
+	}
+
+	MPI_Finalize();
+	return 0;
+}
