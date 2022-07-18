@@ -230,7 +230,7 @@ int main(int argc, char* argv[]) {
     */
 
                 /* Define the basic variables to be used in the entire program */
-                int r = 3, c = r;
+                int r = 1500, c = r;
                 long double* numberArray = (long double*)calloc(r * c, sizeof(long double));
 
                 /* Produce randomly generated numbers for the test matrix */
