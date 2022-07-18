@@ -11,7 +11,7 @@ Idaho National Labratory (INL) Computational Nuclear Engineering
 
 This code is a best attempt at implementing MPI into a n x n matrix LU decomposition solver. The solution for this algorithim
 was sucessfully verified against a 3 x 3 matrix, although further testing is needed for much larger matrix values. The ultimate goal
-is to apply this code against a 1500 x 1500 size matrix, validate the output, and observe speedup % after designating N processes
+is to apply this code against a 1000 x 1000 size matrix, validate the output, and observe speedup % after designating N processes
 on the sawtooth supercomputing cluster. The code shown here will be compared to the determinate solving algorithim (found in the Github
 repository).
 
@@ -54,20 +54,20 @@ double LU_Decomp_Coarse_Grain_2D(int rank, int size, int r, long double** matrix
 	int nCols = ceil(r / size);
 
                 /* Critical section */
-                for (k = 0; k < r - 1; k++) {
-                    MPI_Bcast(&matrix[k][j], r, MPI_LONG_DOUBLE, rank, MPI_COMM_WORLD);
-                    if (k < nCols) {
-                        for (i = k + 1; i < nRows; i++) {
-                            matrix[i][k] = matrix[i][k] / matrix[k][k];
+                    for (k = 0; k < r - 1; k++) {
+                        MPI_Bcast(&matrix[k][j], r - j, MPI_LONG_DOUBLE, rank, MPI_COMM_WORLD);
+                        if (k < nCols) {
+                            for (i = k + 1; i < nRows; i++) {
+                                matrix[i][k] = matrix[i][k] / matrix[k][k];
+                            }
+                        }
+                        MPI_Bcast(&matrix[j][j], r - j, MPI_DOUBLE, rank, MPI_COMM_WORLD);
+                        for (j = k + 1; j < nCols; j++) {
+                            for (i = k + 1; i < nRows; i++) {
+                                matrix[j][i] = matrix[j][i] - (matrix[j][k] * matrix[k][i]);
+                            }
                         }
                     }
-                    MPI_Bcast(&matrix[j][j], r, MPI_LONG_DOUBLE, rank, MPI_COMM_WORLD);
-                    for (j = k + 1; j < nCols; j++) {
-                        for (i = k + 1; i < nRows; i++) {
-                            matrix[j][i] = matrix[j][i] - (matrix[j][k] * matrix[k][i]);
-                        }
-                    }
-                }
 
     /* Compute the final time and print the solution */
     double end = MPI_Wtime();
@@ -96,7 +96,7 @@ double LU_Decomp_Coarse_Grain_1D_Row(int rank, int size, int r, long double** ma
 
                 /* Critical section */
 				for (k = 0; k < r - 1; k++) {
-					MPI_Bcast(&matrix[k][j], r, MPI_LONG_DOUBLE, rank, MPI_COMM_WORLD);
+					MPI_Bcast(&matrix[k][j], r - 1, MPI_LONG_DOUBLE, rank, MPI_COMM_WORLD);
 					for (i = k + 1; i < nRows; i++) {
 						matrix[i][k] = matrix[i][k] / matrix[k][k];
 					}
@@ -137,7 +137,7 @@ double LU_Decomp_Coarse_Grain_1D_Col_V1(int rank, int size, int r, long double**
 	for (int i = 0; i < r; i++) {
 	    map[i] = i % size;
 	}
-
+                /* Critical section */
 				for (j = 0; j < r - 1; j++) {
 					if (map[j] == rank)
 					{
@@ -145,7 +145,7 @@ double LU_Decomp_Coarse_Grain_1D_Col_V1(int rank, int size, int r, long double**
 							matrix[i][j] = matrix[i][j] / matrix[j][j];
 						}
 					}
-					MPI_Bcast(&matrix[j][j], r, MPI_LONG_DOUBLE, map[j], MPI_COMM_WORLD);
+					MPI_Bcast(&matrix[j][j], r - j, MPI_DOUBLE, map[j], MPI_COMM_WORLD);
 					for (k = j + 1; k < r; k++)
 					{
 						if (map[j] == rank)
@@ -194,7 +194,7 @@ double LU_Decomp_Coarse_Grain_1D_Col_V2(int rank, int size, int r, long double**
                             matrix[i][k] = matrix[i][k] / matrix[k][k];
                         }
                     }
-                    MPI_Bcast(&matrix[j][j], r, MPI_LONG_DOUBLE, map[j], MPI_COMM_WORLD);
+                    MPI_Bcast(&matrix[j][j], r - j, MPI_DOUBLE, map[j], MPI_COMM_WORLD);
 					for (j = k + 1; j < nCols; j++) {
 						for (i = k + 1; i < r; i++) {
 							matrix[j][i] = matrix[j][i] - (matrix[j][k] * matrix[k][i]);
@@ -263,19 +263,22 @@ int main(int argc, char* argv[]) {
     is defined in each function. Refer to the function section for the full definition of all function 
     values.
 
+    NOTE! Do not test all three functions at one time. Since the matrix values are not freed at the end of
+    each cyle, executing each function one after another will cuase segmentation to occur at random faults.
+
     */
 
    /* Call algorithim 1 */
    LU_Decomp_Coarse_Grain_2D(rank, size, r, testMatrix);    
 
    /* Call algorithim 2 */
-   LU_Decomp_Coarse_Grain_1D_Row(rank, size, r, testMatrix);
+   //LU_Decomp_Coarse_Grain_1D_Row(rank, size, r, testMatrix);
 
    /* Call algorithim 3 */
-   LU_Decomp_Coarse_Grain_1D_Col_V1(rank, size, r, testMatrix);
+   //LU_Decomp_Coarse_Grain_1D_Col_V1(rank, size, r, testMatrix);
 
    /* Call algorithim 4 */
-   LU_Decomp_Coarse_Grain_1D_Col_V2(rank, size, r, testMatrix);
+   //LU_Decomp_Coarse_Grain_1D_Col_V2(rank, size, r, testMatrix);
 
    MPI_Finalize();
    return 0;
