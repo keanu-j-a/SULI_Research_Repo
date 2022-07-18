@@ -2,20 +2,17 @@
 #include <stdlib.h>
 #include <mpi.h>
 #include <math.h>
-#include <chrono>
+// #include <chrono>
 
 /*
-
 Written By Keanu J. Ammons
 Modified on: 07/8/2022
 Idaho National Labratory (INL) Computational Nuclear Engineering
-
 This code is a best attempt at implementing MPI into a n x n matrix LU decomposition solver. The solution for this algorithim
 was sucessfully verified against a 3 x 3 matrix, although further testing is needed for much larger matrix values. The ultimate goal
 is to apply this code against a 1000 x 1000 size matrix, validate the output, and observe speedup % after designating N processes
 on the sawtooth supercomputing cluster. The code shown here will be compared to the determinate solving algorithim (found in the Github
 repository).
-
 */
 
 void printMatrix(long double** m, int r) {
@@ -24,7 +21,7 @@ void printMatrix(long double** m, int r) {
 	int i = 0, j = 0;
 	for (i = 0; i < r; i++) {
 		for (j = 0; j < r; j++) {
-			printf("|  %f  | ", m[i][j]);
+			printf("|  %Lf  | ", m[i][j]);
 		}
 		printf("\n");
 	}
@@ -33,14 +30,11 @@ void printMatrix(long double** m, int r) {
 void LUDecomposition(int rank, int size, int r, long double** arrayInFunction) {
 
 	/*
-
 	The arguments of the LU decomposition function are as follows
-
 	1.) 'rank'.......................The definition of each processes's individual designation (0 to size - 1)
 	2.) 'size'.......................The overall number of processes in the system
 	3.) 'r'..........................The row (and column) of the n x n square matrix
 	4.) 'arrayInFunction'............The n x n (2D) heap memory allocation that will hold the numbers for the A matrix.
-
 	*/
 
 	/* Define inital varaibles and arrays */
@@ -97,12 +91,14 @@ void LUDecomposition(int rank, int size, int r, long double** arrayInFunction) {
 				for (int p = 0; p < r; p++) {
 					//printf(" %d  ", map[p]);
 				}
-				auto start = std::chrono::high_resolution_clock::now();
+				//auto start = std::chrono::high_resolution_clock::now();
+                double start = MPI_Wtime();
 				/* Implement a 2D - coarse grain LU decomposition solving algorithim */
 				int nRows = ceil(r / size);
 				int nCols = ceil(r / size);
 				//printf("\n %d \n", nRows);
 				
+                // ##############################################################
 				// Coarse Grain 2-D Parallel Algorithim
 				/*
 				for (k = 0; k < r - 1; k++) {
@@ -120,12 +116,9 @@ void LUDecomposition(int rank, int size, int r, long double** arrayInFunction) {
 					}
 				}
 				*/
-				
-
 				// ##############################################################
 				/* // Coarse Grain 1-D row
 				for (k = 0; k < r - 1; k++) {
-
 					MPI_Bcast(&arrayInFunction[k][j], r - 1, MPI_LONG_DOUBLE, rank, MPI_COMM_WORLD);
 					for (i = k + 1; i < nRows; i++) {
 						arrayInFunction[i][k] = arrayInFunction[i][k] / arrayInFunction[k][k];
@@ -141,7 +134,8 @@ void LUDecomposition(int rank, int size, int r, long double** arrayInFunction) {
 				*/
 				// ##############################################################
 
-				/* // Coarse Grain model
+				// Coarse Grain model
+                /*
 				for (j = 0; j < r - 1; j++) {
 					if (map[j] == rank)
 					{
@@ -150,7 +144,6 @@ void LUDecomposition(int rank, int size, int r, long double** arrayInFunction) {
 						}
 					}
 					MPI_Bcast(&arrayInFunction[j][j], r - j, MPI_DOUBLE, map[j], MPI_COMM_WORLD);
-
 					for (k = j + 1; k < r; k++)
 					{
 						if (map[j] == rank)
@@ -161,36 +154,36 @@ void LUDecomposition(int rank, int size, int r, long double** arrayInFunction) {
 						}
 					}
 				}
-				*/
+                */
+				
 
 				// ##############################################################
 
-				/* // Modified Column (Coarse Grain Model)
-				for (int j = 0; j < r - 1; j++) {
-					for (int i = j + 1; i < r; i++) {
-						if ((i % size) == rank) {
-							arrayInFunction[i][j] = arrayInFunction[i][j] / arrayInFunction[j][j]; // => L
-
-							for (int k = j + 1; k < r; k++) {
-								arrayInFunction[i][k] = arrayInFunction[i][k] - arrayInFunction[i][j] * arrayInFunction[j][k]; // => U
-							}
+				// Modified Column (Coarse Grain Model)
+                /*
+                for (k = 0; k < r - 1; k++) {
+					if (k < nCols) {
+                        for (i = k + 1; i < r; i++) {
+                            arrayInFunction[i][k] = arrayInFunction[i][k] / arrayInFunction[k][k];
+                            //printf(" \n %lf \n", arrayInFunction[i][k]);
+                        }
+                    }
+                    MPI_Bcast(&arrayInFunction[j][j], r - j, MPI_DOUBLE, map[j], MPI_COMM_WORLD);
+					for (j = k + 1; j < nCols; j++) {
+						for (i = k + 1; i < r; i++) {
+							arrayInFunction[j][i] = arrayInFunction[j][i] - (arrayInFunction[j][k] * arrayInFunction[k][i]);
+							//printf(" \n %lf \n", arrayInFunction[j][i]);
 						}
-					}
-
-					for (int i = j + 1; i < r; i++) {
-						MPI_Bcast(&arrayInFunction[i][j], r - j, MPI_FLOAT, i % size, MPI_COMM_WORLD);
 					}
 				}
 				*/
 
 				/*
 				for (int m = 0; m < r; m++) {
-
 					for (int n = 1 + m; n < r; n++) {
 						arrayInFunction[n][m] = 0;
 					}
 				}
-
 				
 				for (int k = 0; k < r; k++) {
 					lowerTArray[k][k] = 1;
@@ -199,9 +192,10 @@ void LUDecomposition(int rank, int size, int r, long double** arrayInFunction) {
 				// ##############################################################
 
 
-
-				auto end = std::chrono::high_resolution_clock::now();
-				std::chrono::duration<double> elapsed_time = end - start;
+                double end = MPI_Wtime();
+				// auto end = std::chrono::high_resolution_clock::now();
+				// std::chrono::duration<double> elapsed_time = end - start;
+                double elapsed_time = end - start;
 
 				if (rank == 0) {
 					printf(" %f ", elapsed_time);
@@ -215,7 +209,7 @@ void LUDecomposition(int rank, int size, int r, long double** arrayInFunction) {
 
 					//printf("\n");
 
-					printMatrix(arrayInFunction, r);
+					//printMatrix(arrayInFunction, r);
 				
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -230,14 +224,14 @@ int main(int argc, char* argv[]) {
 	MPI_Comm_size(MPI_COMM_WORLD, &size);
 
 	/* Define inital variables */
-	int r = 3, c = r, u = 0;
+	int r = 1500, c = r, u = 0;
 	int* numberArray = (int*)calloc(r * c, sizeof(int));
 	long double** arrayInFunction = (long double**)calloc(r, sizeof(long double*));
 
 	/* Produce randomly generated numbers */
 	srand(100);
 	for (int i = 0; i < r * c; i++) {
-		numberArray[i] = rand() / 100;
+		numberArray[i] = rand() % 1000;
 	}
 
 	/* Further define 2D memory heap */
