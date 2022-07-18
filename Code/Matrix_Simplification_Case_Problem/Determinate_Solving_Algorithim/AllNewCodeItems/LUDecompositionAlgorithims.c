@@ -11,7 +11,7 @@ Idaho National Labratory (INL) Computational Nuclear Engineering
 
 This code is a best attempt at implementing MPI into a n x n matrix LU decomposition solver. The solution for this algorithim
 was sucessfully verified against a 3 x 3 matrix, although further testing is needed for much larger matrix values. The ultimate goal
-is to apply this code against a 1000 x 1000 size matrix, validate the output, and observe speedup % after designating N processes
+is to apply this code against a 1500 x 1500 size matrix, validate the output, and observe speedup % after designating N processes
 on the sawtooth supercomputing cluster. The code shown here will be compared to the determinate solving algorithim (found in the Github
 repository).
 
