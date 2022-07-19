@@ -102,28 +102,20 @@ void LUDecomposition(int rank, int size, int r, long double** arrayInFunction) {
 
 				// Coarse Grain model CURRENTLY FACING REVISION
                 /*
-				for (j = 0; j < r - 1; j++) {
-					if (map[j] == rank)
-					{
-						for (i = j + 1; i < r; i++) {
-							arrayInFunction[i][k] = arrayInFunction[i][k] / arrayInFunction[k][k];
-						}
+				for (k = 0; k < r - 1; k++) {
+
+					for (i = k + 1; i < r; i++) {
+						arrayInFunction[i][k] = arrayInFunction[i][k] / arrayInFunction[k][k];
 					}
-					MPI_Bcast(&arrayInFunction[j][j], r - j, MPI_LONG_DOUBLE, map[j], MPI_COMM_WORLD);
-					for (k = j + 1; k < r; k++)
+					MPI_Bcast(&arrayInFunction[j][j], r - i, MPI_LONG_DOUBLE, map[k], MPI_COMM_WORLD);
+					for (j = k + 1; j < r; j++)
 					{
-						if (map[j] == rank)
-						{
-							for (i = j + 1; i < r; i++) {
-								arrayInFunction[i][j] = arrayInFunction[i][j] - (arrayInFunction[i][k] * arrayInFunction[k][j]);
-							}
+						for (i = k + 1; i < r; i++) {
+							arrayInFunction[i][j] = arrayInFunction[i][j] - (arrayInFunction[i][k] * arrayInFunction[k][j]);
 						}
 					}
 				}
 				*/
-                
-				
-
 				// ##############################################################
 
 				// Modified Column (Coarse Grain Model) (working)
