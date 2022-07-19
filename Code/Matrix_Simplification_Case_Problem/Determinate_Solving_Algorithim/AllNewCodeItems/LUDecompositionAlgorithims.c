@@ -32,11 +32,13 @@ void printMatrix(long double** m, int r) {
 }
 
 	/*
+
 	The arguments of the LU decomposition algorithims are as follows
 	1.) 'rank'.......................The definition of each processes's individual designation (0 to size - 1)
 	2.) 'size'.......................The overall number of processes in the system
 	3.) 'r'..........................The row (and column) of the n x n square matrix
 	4.) 'arrayInFunction'............The n x n (2D) heap memory allocation that will hold the numbers for the A matrix.
+
 	*/
 
 
@@ -49,22 +51,18 @@ double LU_Decomp_Coarse_Grain_2D(int rank, int size, int r, long double** matrix
     /* Define inital varaibles and arrays */
 	int c = r, j = 0, i = 0, k = 0;
 
-    /* Implement a 2D - coarse grain LU decomposition solving algorithim */
-	int nRows = ceil(r / size);
-	int nCols = ceil(r / size);
-
-                /* Critical section */
+                     /* Critical section */
                     for (k = 0; k < r - 1; k++) {
                         MPI_Bcast(&matrix[k][j], r - j, MPI_LONG_DOUBLE, rank, MPI_COMM_WORLD);
-                        if (k < nCols) {
-                            for (i = k + 1; i < nRows; i++) {
+                        if (k < r) {
+                            for (i = k + 1; i < r; i++) {
                                 matrix[i][k] = matrix[i][k] / matrix[k][k];
                             }
                         }
-                        MPI_Bcast(&matrix[j][j], r - j, MPI_DOUBLE, rank, MPI_COMM_WORLD);
-                        for (j = k + 1; j < nCols; j++) {
-                            for (i = k + 1; i < nRows; i++) {
-                                matrix[j][i] = matrix[j][i] - (matrix[j][k] * matrix[k][i]);
+                        MPI_Bcast(&matrix[j][j], r - i, MPI_LONG_DOUBLE, rank, MPI_COMM_WORLD);
+                        for (j = k + 1; j < r; j++) {
+                            for (i = k + 1; i < r; i++) {
+                                matrix[i][j] = matrix[i][j] - (matrix[i][k] * matrix[k][j]);
                             }
                         }
                     }
@@ -72,6 +70,10 @@ double LU_Decomp_Coarse_Grain_2D(int rank, int size, int r, long double** matrix
     /* Compute the final time and print the solution */
     double end = MPI_Wtime();
     double elapsed_time = end - start;
+
+    /* print the solution matrix */
+    printf("\n This is the simplified solution matrix \n");
+    printMatrix(matrix,r);
 
     /* Print and return the final time */
     if (rank == 0) {
@@ -90,19 +92,15 @@ double LU_Decomp_Coarse_Grain_1D_Row(int rank, int size, int r, long double** ma
     /* Define inital varaibles and arrays */
 	int c = r, j = 0, i = 0, k = 0;
 
-    /* Implement a 2D - coarse grain LU decomposition solving algorithim */
-	int nRows = ceil(r / size);
-	int nCols = ceil(r / size);
-
                 /* Critical section */
 				for (k = 0; k < r - 1; k++) {
-					MPI_Bcast(&matrix[k][j], r - 1, MPI_LONG_DOUBLE, rank, MPI_COMM_WORLD);
-					for (i = k + 1; i < nRows; i++) {
+					MPI_Bcast(&matrix[k][j], r - j, MPI_LONG_DOUBLE, rank, MPI_COMM_WORLD);
+					for (i = k + 1; i < r; i++) {
 						matrix[i][k] = matrix[i][k] / matrix[k][k];
 					}
 					for (j = k + 1; j < r; j++) {
-						for (i = k + 1; i < nRows; i++) {
-							matrix[j][i] = matrix[j][i] - (matrix[j][k] * matrix[k][i]);
+						for (i = k + 1; i < r; i++) {
+							matrix[i][j] = matrix[i][j] - (matrix[i][k] * matrix[k][j]);
 						}
 					}
 				}
@@ -110,6 +108,10 @@ double LU_Decomp_Coarse_Grain_1D_Row(int rank, int size, int r, long double** ma
     /* Compute the final time and print the solution */
     double end = MPI_Wtime();
     double elapsed_time = end - start;
+
+    /* print the solution matrix */
+    printf("\n This is the simplified solution matrix \n");
+    printMatrix(matrix,r);
 
     /* Print and return the final time */
     if (rank == 0) {
@@ -128,38 +130,33 @@ double LU_Decomp_Coarse_Grain_1D_Col_V1(int rank, int size, int r, long double**
     /* Define inital varaibles and arrays */
 	int c = r, j = 0, i = 0, k = 0;
 
-    /* Implement a 2D - coarse grain LU decomposition solving algorithim */
-	int nRows = ceil(r / size);
-	int nCols = ceil(r / size);
-
     /* Define a mapping algorithim */
     int* map = (int*)malloc(r * (sizeof * map));
 	for (int i = 0; i < r; i++) {
 	    map[i] = i % size;
 	}
                 /* Critical section */
-				for (j = 0; j < r - 1; j++) {
-					if (map[j] == rank)
-					{
-						for (i = j + 1; i < r; i++) {
-							matrix[i][j] = matrix[i][j] / matrix[j][j];
-						}
+				for (k = 0; k < r - 1; k++) {
+					for (i = k + 1; i < r; i++) {
+						arrayInFunction[i][k] = arrayInFunction[i][k] / arrayInFunction[k][k];
 					}
-					MPI_Bcast(&matrix[j][j], r - j, MPI_DOUBLE, map[j], MPI_COMM_WORLD);
-					for (k = j + 1; k < r; k++)
+					MPI_Bcast(&arrayInFunction[j][j], r - i, MPI_LONG_DOUBLE, map[k], MPI_COMM_WORLD);
+					for (j = k + 1; j < r; j++)
 					{
-						if (map[j] == rank)
-						{
-							for (i = j + 1; i < r; i++) {
-								matrix[k][i] = matrix[k][i] - (matrix[k][j] * matrix[j][i]);
-							}
+						for (i = k + 1; i < r; i++) {
+							arrayInFunction[i][j] = arrayInFunction[i][j] - (arrayInFunction[i][k] * arrayInFunction[k][j]);
 						}
 					}
 				}
+                
 
     /* Compute the final time and print the solution */
     double end = MPI_Wtime();
     double elapsed_time = end - start;
+
+    /* print the solution matrix */
+    printf("\n This is the simplified solution matrix \n");
+    printMatrix(matrix,r);
 
     /* Print and return the final time */
     if (rank == 0) {
@@ -178,33 +175,30 @@ double LU_Decomp_Coarse_Grain_1D_Col_V2(int rank, int size, int r, long double**
     /* Define inital varaibles and arrays */
 	int c = r, j = 0, i = 0, k = 0;
 
-    /* Implement a 2D - coarse grain LU decomposition solving algorithim */
-	int nRows = ceil(r / size);
-	int nCols = ceil(r / size);
+                /* Critical Section */
+				for (int j = 0; j < r - 1; j++) {
+					for (int i = j + 1; i < r; i++) {
+						if ((i % size) == rank) {
+							arrayInFunction[i][j] = arrayInFunction[i][j] / arrayInFunction[j][j];
 
-    /* Define a mapping algorithim */
-    int* map = (int*)malloc(r * (sizeof * map));
-	for (int i = 0; i < r; i++) {
-	    map[i] = i % size;
-	}
-
-                for (k = 0; k < r - 1; k++) {
-					if (k < nCols) {
-                        for (i = k + 1; i < r; i++) {
-                            matrix[i][k] = matrix[i][k] / matrix[k][k];
-                        }
-                    }
-                    MPI_Bcast(&matrix[j][j], r - j, MPI_DOUBLE, map[j], MPI_COMM_WORLD);
-					for (j = k + 1; j < nCols; j++) {
-						for (i = k + 1; i < r; i++) {
-							matrix[j][i] = matrix[j][i] - (matrix[j][k] * matrix[k][i]);
+							for (int k = j + 1; k < r; k++) {
+								arrayInFunction[i][k] = arrayInFunction[i][k] - arrayInFunction[i][j] * arrayInFunction[j][k];
+							}
 						}
+					}
+
+					for (int i = j + 1; i < r; i++) {
+						MPI_Bcast(&arrayInFunction[i][j], r - j, MPI_LONG_DOUBLE, i % size, MPI_COMM_WORLD);
 					}
 				}
 
     /* Compute the final time and print the solution */
     double end = MPI_Wtime();
     double elapsed_time = end - start;
+
+    /* print the solution matrix */
+    printf("\n This is the simplified solution matrix \n");
+    printMatrix(matrix,r);
 
     /* Print and return the final time */
     if (rank == 0){
@@ -230,7 +224,7 @@ int main(int argc, char* argv[]) {
     */
 
                 /* Define the basic variables to be used in the entire program */
-                int r = 1500, c = r;
+                int r = 4, c = r;
                 long double* numberArray = (long double*)calloc(r * c, sizeof(long double));
 
                 /* Produce randomly generated numbers for the test matrix */
@@ -241,6 +235,7 @@ int main(int argc, char* argv[]) {
 
                 /* Define a 2D test matrix to be used in this experiment */
                 long double** testMatrix = (long double**)calloc(r, sizeof(long double*));
+                
                 for (int i = 0; i < r; i++) {
                     testMatrix[i] = (long double*)calloc(c, sizeof(long double));
                 }
@@ -255,7 +250,8 @@ int main(int argc, char* argv[]) {
                 }
 
                 /* Print the new matrix for validation */
-                //printMatrix(testMatrix, r);
+                printf("\n This is the orgional matrix: \n");
+                printMatrix(testMatrix, r);
 
     /*
 
@@ -263,7 +259,7 @@ int main(int argc, char* argv[]) {
     is defined in each function. Refer to the function section for the full definition of all function 
     values.
 
-    NOTE! Do not test all three functions at one time. Since the matrix values are not freed at the end of
+    NOTE! Do not test all three functions at one time! Since the matrix heap memory is not freed at the end of
     each cyle, executing each function one after another will cuase segmentation to occur at random faults.
 
     */
@@ -274,7 +270,7 @@ int main(int argc, char* argv[]) {
    /* Call algorithim 2 */
    //LU_Decomp_Coarse_Grain_1D_Row(rank, size, r, testMatrix);
 
-   /* Call algorithim 3 */
+   /* Call algorithim 3 CURRENTLY FACING REVISION */
    //LU_Decomp_Coarse_Grain_1D_Col_V1(rank, size, r, testMatrix);
 
    /* Call algorithim 4 */
