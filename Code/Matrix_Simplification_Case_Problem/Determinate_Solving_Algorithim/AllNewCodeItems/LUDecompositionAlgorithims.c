@@ -138,13 +138,13 @@ double LU_Decomp_Coarse_Grain_1D_Col_V1(int rank, int size, int r, long double**
                 /* Critical section */
 				for (k = 0; k < r - 1; k++) {
 					for (i = k + 1; i < r; i++) {
-						arrayInFunction[i][k] = arrayInFunction[i][k] / arrayInFunction[k][k];
+						matrix[i][k] = matrix[i][k] / matrix[k][k];
 					}
-					MPI_Bcast(&arrayInFunction[j][j], r - i, MPI_LONG_DOUBLE, map[k], MPI_COMM_WORLD);
+					MPI_Bcast(&matrix[j][j], r - i, MPI_LONG_DOUBLE, map[k], MPI_COMM_WORLD);
 					for (j = k + 1; j < r; j++)
 					{
 						for (i = k + 1; i < r; i++) {
-							arrayInFunction[i][j] = arrayInFunction[i][j] - (arrayInFunction[i][k] * arrayInFunction[k][j]);
+							matrix[i][j] = matrix[i][j] - (matrix[i][k] * matrix[k][j]);
 						}
 					}
 				}
