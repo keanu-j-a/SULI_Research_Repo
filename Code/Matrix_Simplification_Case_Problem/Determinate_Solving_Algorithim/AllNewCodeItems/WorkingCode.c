@@ -158,37 +158,22 @@ void LUDecomposition(int rank, int size, int r, long double** arrayInFunction) {
 				
 
 				// ##############################################################
+	// Modified Column (Coarse Grain Model)
+	for (int j = 0; j < r - 1; j++) {
+		for (int i = j + 1; i < r; i++) {
+			if ((i % size) == rank) {
+				arrayInFunction[i][j] = arrayInFunction[i][j] / arrayInFunction[j][j]; // => L
 
-				// Modified Column (Coarse Grain Model)
-                /*
-                for (k = 0; k < r - 1; k++) {
-					if (k < nCols) {
-                        for (i = k + 1; i < r; i++) {
-                            arrayInFunction[i][k] = arrayInFunction[i][k] / arrayInFunction[k][k];
-                            //printf(" \n %lf \n", arrayInFunction[i][k]);
-                        }
-                    }
-                    MPI_Bcast(&arrayInFunction[j][j], r - j, MPI_DOUBLE, map[j], MPI_COMM_WORLD);
-					for (j = k + 1; j < nCols; j++) {
-						for (i = k + 1; i < r; i++) {
-							arrayInFunction[j][i] = arrayInFunction[j][i] - (arrayInFunction[j][k] * arrayInFunction[k][i]);
-							//printf(" \n %lf \n", arrayInFunction[j][i]);
-						}
-					}
+				for (int k = j + 1; k < r; k++) {
+					arrayInFunction[i][k] = arrayInFunction[i][k] - arrayInFunction[i][j] * arrayInFunction[j][k]; // => U
 				}
-				*/
+			}
+		}
 
-				/*
-				for (int m = 0; m < r; m++) {
-					for (int n = 1 + m; n < r; n++) {
-						arrayInFunction[n][m] = 0;
-					}
-				}
-				
-				for (int k = 0; k < r; k++) {
-					lowerTArray[k][k] = 1;
-				}
-				*/
+		for (int i = j + 1; i < r; i++) {
+			MPI_Bcast(&arrayInFunction[i][j], r - j, MPI_LONG_DOUBLE, i % size, MPI_COMM_WORLD);
+		}
+	}
 				// ##############################################################
 
 
