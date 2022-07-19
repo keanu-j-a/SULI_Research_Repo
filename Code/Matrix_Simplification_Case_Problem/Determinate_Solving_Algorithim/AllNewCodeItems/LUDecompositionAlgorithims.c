@@ -37,7 +37,7 @@ void printMatrix(long double** m, int r) {
 	1.) 'rank'.......................The definition of each processes's individual designation (0 to size - 1)
 	2.) 'size'.......................The overall number of processes in the system
 	3.) 'r'..........................The row (and column) of the n x n square matrix
-	4.) 'matrix'............The n x n (2D) heap memory allocation that will hold the numbers for the A matrix.
+	4.) 'matrix'.....................The n x n (2D) heap memory allocation that will hold the numbers for the A matrix.
 
 	*/
 
