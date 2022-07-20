@@ -93,17 +93,17 @@ double LU_Decomp_Coarse_Grain_1D_Row(int rank, int size, int r, long double** ma
 	int c = r, j = 0, i = 0, k = 0;
 
                 /* Critical section */
-				for (k = 0; k < r - 1; k++) {
-					MPI_Bcast(&matrix[k][j], r - j, MPI_LONG_DOUBLE, rank, MPI_COMM_WORLD);
-					for (i = k + 1; i < r; i++) {
-						matrix[i][k] = matrix[i][k] / matrix[k][k];
-					}
-					for (j = k + 1; j < r; j++) {
-						for (i = k + 1; i < r; i++) {
-							matrix[i][j] = matrix[i][j] - (matrix[i][k] * matrix[k][j]);
-						}
-					}
+		for (k = 0; k < r - 1; k++) {
+			MPI_Bcast(&matrix[k][j], r - j, MPI_LONG_DOUBLE, rank, MPI_COMM_WORLD);
+			for (i = k + 1; i < r; i++) {
+				matrix[i][k] = matrix[i][k] / matrix[k][k];
+			}
+			for (j = k + 1; j < r; j++) {
+				for (i = k + 1; i < r; i++) {
+					matrix[i][j] = matrix[i][j] - (matrix[i][k] * matrix[k][j]);
 				}
+			}
+		}
     
     /* Compute the final time and print the solution */
     double end = MPI_Wtime();
@@ -136,18 +136,18 @@ double LU_Decomp_Coarse_Grain_1D_Col_V1(int rank, int size, int r, long double**
 	    map[i] = i % size;
 	}
                 /* Critical section */
-				for (k = 0; k < r - 1; k++) {
-					for (i = k + 1; i < r; i++) {
-						matrix[i][k] = matrix[i][k] / matrix[k][k];
-					}
-					MPI_Bcast(&matrix[j][j], r - i, MPI_LONG_DOUBLE, map[k], MPI_COMM_WORLD);
-					for (j = k + 1; j < r; j++)
-					{
-						for (i = k + 1; i < r; i++) {
-							matrix[i][j] = matrix[i][j] - (matrix[i][k] * matrix[k][j]);
-						}
-					}
+		for (k = 0; k < r - 1; k++) {
+			for (i = k + 1; i < r; i++) {
+				matrix[i][k] = matrix[i][k] / matrix[k][k];
+			}
+			MPI_Bcast(&matrix[j][j], r - i, MPI_LONG_DOUBLE, map[k], MPI_COMM_WORLD);
+			for (j = k + 1; j < r; j++)
+			{
+				for (i = k + 1; i < r; i++) {
+					matrix[i][j] = matrix[i][j] - (matrix[i][k] * matrix[k][j]);
 				}
+			}
+		}
                 
 
     /* Compute the final time and print the solution */
@@ -176,21 +176,21 @@ double LU_Decomp_Coarse_Grain_1D_Col_V2(int rank, int size, int r, long double**
 	int c = r, j = 0, i = 0, k = 0;
 
                 /* Critical Section */
-				for (int j = 0; j < r - 1; j++) {
-					for (int i = j + 1; i < r; i++) {
-						if ((i % size) == rank) {
-							arrayInFunction[i][j] = arrayInFunction[i][j] / arrayInFunction[j][j];
+		for (int j = 0; j < r - 1; j++) {
+			for (int i = j + 1; i < r; i++) {
+				if ((i % size) == rank) {
+					matrix[i][j] = matrix[i][j] / matrix[j][j];
 
-							for (int k = j + 1; k < r; k++) {
-								arrayInFunction[i][k] = arrayInFunction[i][k] - arrayInFunction[i][j] * arrayInFunction[j][k];
-							}
-						}
-					}
-
-					for (int i = j + 1; i < r; i++) {
-						MPI_Bcast(&arrayInFunction[i][j], r - j, MPI_LONG_DOUBLE, i % size, MPI_COMM_WORLD);
+					for (int k = j + 1; k < r; k++) {
+						matrix[i][k] = matrix[i][k] - matrix[i][j] * matrix[j][k];
 					}
 				}
+			}
+
+			for (int i = j + 1; i < r; i++) {
+				MPI_Bcast(&arrayInFunction[i][j], r - j, MPI_LONG_DOUBLE, i % size, MPI_COMM_WORLD);
+			}
+		}
 
     /* Compute the final time and print the solution */
     double end = MPI_Wtime();
