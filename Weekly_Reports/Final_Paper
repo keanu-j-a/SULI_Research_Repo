@@ -1,0 +1,23 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\newcommand\authormark[1]{\textsuperscript{#1}}
+\usepackage{amsmath,amssymb}
+\usepackage[colorlinks=true,bookmarks=false,citecolor=blue,urlcolor=blue]{hyperref}
+
+
+\begin{document}
+
+\title{\textbf{Parallel Comparison of the Idaho National Laboratory SMART Algorithm}}
+\author{Dr. Derek R. Gaston,\authormark{1} Keanu J. Ammons,\authormark{2}}
+\date{August 11, 2022}
+
+\maketitle
+
+\address{\authormark{1} Computational Frameworks, Idaho National Laboratory, Idaho Falls, ID , 83415, United States of America\\} 
+\address{\indent \authormark{2} Department of Engineering, Western Carolina University, 1 University Way, Cullowhee, NC 28723}
+
+\section{Abstract}
+
+To address the need for high performance parallel communication algorithms for nuclear reactor simulation, Idaho National Laboratory (INL) developed the Scalable Massively Asynchronous Ray Tracing (SMART) algorithm.  This algorithm performs sparse communication of data structures while overlapping communication and computation, a key to achieving efficiency. In this study, multiple communication algorithms were compared on INL supercomputers Lemhi and Sawtooth. Message Passing Interface (MPI) was used to implement both synchronous and asynchronous parallel implementation. Additional methods of communication, including single-hop, multi-hop, and overlapped asynchronous communication were explored in this study. Simulation results provide additional insight on how massively scalable algorithms can be further optimized in the near future. 
+
+\end{document}
